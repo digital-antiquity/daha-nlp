@@ -7,3 +7,6 @@ en-sent.bin
 en-token.bin
 .settings
 target
+StANNIE_1.HTML
+StANNIE_toXML_1.HTML
+gate/plugins/unused

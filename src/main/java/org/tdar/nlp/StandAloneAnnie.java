@@ -96,6 +96,7 @@ public class StandAloneAnnie  {
     Out.prln("Initialising GATE...");
     System.setProperty("gate.plugins.home", "gate/plugins/");
     System.setProperty("gate.site.config", "gate/gate.xml");
+    System.setProperty("java.awt.headless", "true");
     Gate.init();
     Out.prln("...GATE initialised");
 
