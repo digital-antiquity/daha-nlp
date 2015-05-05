@@ -1,0 +1,9 @@
+.classpath
+.project
+en-ner-location.bin
+en-ner-organization.bin
+en-ner-person.bin
+en-sent.bin
+en-token.bin
+.settings
+target
