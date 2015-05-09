@@ -2,6 +2,7 @@ package org.tdar.nlp;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,7 +18,7 @@ import org.apache.commons.lang.StringUtils;
 
 public class NLPHelper {
 
-    public static void printInOccurrenceOrder(String key2, Map<String, Integer> ocur) {
+    public static void printInOccurrenceOrder(String type, Map<String, Integer> ocur) {
         Map<Integer, List<String>> reverse = new HashMap<Integer, List<String>>();
         int avg = 0;
         Map<String, Integer> singles = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
@@ -37,46 +38,75 @@ public class NLPHelper {
         }
         avg = avg / ocur.size();
 
-        // for each single word phrase, try and fit it into a multi-word and combine
         Set<String> toRemove = new HashSet<String>();
-        Iterator<Entry<String, Integer>> iterator = singles.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Entry<String, Integer> entry = iterator.next();
-            String txt = entry.getKey();
-            for (String key : multiWord.keySet()) {
-                // note this will inappropriately boost one last name match over another, eg. Adam Smith, and Steve Smith, with Smith
-                if (stripClean(key).contains(stripClean(txt))) {
-                    toRemove.add(txt);
-                    multiWord.put(key, multiWord.get(key) + entry.getValue());
+        // only combine multi-> single words if we're dealing with people 
+        if (type.equalsIgnoreCase("Person")) {
+            // for each single word phrase, try and fit it into a multi-word and combine
+            Iterator<Entry<String, Integer>> iterator = singles.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Entry<String, Integer> entry = iterator.next();
+                String txt = entry.getKey();
+                for (String key : multiWord.keySet()) {
+                    // note this will inappropriately boost one last name match over another, eg. Adam Smith, and Steve Smith, with Smith
+                    String parent = stripClean(key);
+                    if (parent.endsWith(" " + txt)) {
+                        toRemove.add(txt);
+                        multiWord.put(key, multiWord.get(key) + entry.getValue());
+                    }
                 }
             }
-        }
-        for (String key : toRemove) {
-            singles.remove(key);
+            for (String key : toRemove) {
+                singles.remove(key);
+            }
         }
 
         multiWord.putAll(singles);
         toRemove.clear();
-        Set<String> set2 = new HashSet<>(multiWord.keySet());
-        for (String key : multiWord.keySet()) {
-            String cl = stripClean(key);
+
+        List<String> keySet = new ArrayList<String>(multiWord.keySet());
+        Set<String> set2 = new HashSet<>(keySet);
+        Collections.sort(keySet, new Comparator<String>() {
+
+            @Override
+            public int compare(String o1, String o2) {
+                return o2.length() - o1.length();
+            }
+        });
+
+        /**
+         * Match Shortened Versions of Names
+         */
+        for (String key : keySet) {
+            String cl = stripClean(key).toLowerCase();
             String init = "";
             String init2 = "";
-            // -------------------------- 1 -- 2 ------- 3 -------- 4
-            Pattern p = Pattern.compile("(\\w)(\\w*)\\s(\\w\\.)\\s(\\w+)");
-            Matcher matcher = p.matcher(cl);
-            if (matcher.matches()) {
-                // First Last (w/o initial)
-                init = matcher.group(1) + matcher.group(2) + " " + matcher.group(4);
-                // F. Last
-                init = matcher.group(1) + " " + matcher.group(4);
+            String init3 = "";
+            if (type.equalsIgnoreCase("person")) {
+                // -------------------------- 1 -- 2 ------- 3 -------- 4
+                Pattern p = Pattern.compile("(\\w)(\\w*)\\.?\\s(\\w\\.?)\\s([\\w]+)");
+                Matcher matcher = p.matcher(cl);
+                if (matcher.matches()) {
+                    // First Last (w/o initial)
+                    init = matcher.group(1) + matcher.group(2) + " " + matcher.group(4);
+                    // F. Last
+                    init2 = matcher.group(1) + " " + matcher.group(4);
+                }
+
+                // -------------------------- 1 -- 2 ------- 3
+                Pattern p2 = Pattern.compile("(\\w)(\\w*)\\.?\\s(\\w+)");
+                Matcher matcher2 = p2.matcher(cl);
+                if (matcher2.matches()) {
+                    // F. Last
+                    init3 = matcher2.group(1) + " " + matcher2.group(3);
+                }
             }
             for (String keyi : set2) {
                 if (keyi.equals(key) || toRemove.contains(keyi)) {
                     continue;
                 }
-                int dist = StringUtils.getLevenshteinDistance(cl, stripClean(keyi));
-                if (keyi.equals(init) || keyi.equals(init2) || dist < 2 && keyi.length() > 5) {
+                String clean = stripClean(keyi).toLowerCase();
+//                int dist = StringUtils.getLevenshteinDistance(cl, clean);
+                if (clean.equalsIgnoreCase(init) || clean.equalsIgnoreCase(init2) || clean.equalsIgnoreCase(init3) ) {
                     toRemove.add(keyi);
                     multiWord.put(key, multiWord.get(key) + multiWord.get(keyi));
                 }
@@ -106,8 +136,8 @@ public class NLPHelper {
         Collections.reverse(list);
         for (Integer key : list) {
             for (String val : reverse.get(key)) {
-                String header = key2;
-                if (StringUtils.isNotBlank(key2)) {
+                String header = type;
+                if (StringUtils.isNotBlank(type)) {
                     header += " ";
                 }
                 if (key > avg) {
@@ -119,14 +149,14 @@ public class NLPHelper {
         }
     }
 
+    /**
+     * Remove punctuation and force to lowercase
+     * 
+     * @param key
+     * @return
+     */
     private static String stripClean(String key) {
         String mat = key.toLowerCase().replaceAll("[^\\w\\s]", "");
-        // // remove initials Richard P Morris --> Richard Morris
-        // mat = mat.replace("\\s\\w\\s", " ");
-        // // remove initials |R Morris --> Morris
-        // mat = mat.replace("^\\w\\s", " ");
-        // // remove initials Morris i --> Morris
-        // mat = mat.replace("\\s\\w$", " ");
         return mat;
     }
 
