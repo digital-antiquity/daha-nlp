@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.lucene.util.MathUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -172,19 +173,8 @@ public class StandAloneAnnie {
             }
 
             for (String key : types.keySet()) {
-                Map<String, Integer> subType = types.get(key);
-                for (String st : subType.keySet()) {
-                    if (subType.get(st) > 1) {
-                        logger.debug(key + " : " + st + "(" + subType.get(st) + ")");
-                    }
-                }
+                NLPHelper.printInOccurrenceOrder(key, types.get(key));
             }
-
-            String xmlDocument = doc.toXml(peopleAndPlaces, false);
-            String fileName = new String("StANNIE_toXML_" + count + ".HTML");
-            FileWriter writer = new FileWriter(fileName);
-            writer.write(xmlDocument);
-            writer.close();
 
         } // for each doc
     } // main
@@ -241,6 +231,7 @@ public class StandAloneAnnie {
             Map<String, Map<String, Integer>> types) {
         Map<String, Integer> map = types.get(currAnnot.getType());
         String str = editableContent.substring((int) insertPositionStart, (int) insertPositionEnd);
+        str = NLPHelper.cleanString(str);
         if (!map.containsKey(str)) {
             map.put(str, 1);
         } else {

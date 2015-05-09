@@ -9,14 +9,10 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
@@ -90,30 +86,8 @@ public class App
             // }
             //
 
-            Map<Integer, List<String>> reverse = new HashMap<Integer, List<String>>();
-            for (Entry<String, Integer> entry : ocur.entrySet()) {
-                List<String> results = reverse.get(entry.getValue());
-                if (results == null) {
-                    results = new ArrayList<String>();
-                }
-                results.add(entry.getKey());
-                reverse.put(entry.getValue(), results);
-                // System.out.println(key + " (" + ocur.get(key) + ")");
-            }
-
-            List<Integer> list = new ArrayList<Integer>(reverse.keySet());
-            Collections.sort(list);
-            Collections.reverse(list);
-            for (Integer key : list) {
-                for (String val : reverse.get(key)) {
-                    if (key > 1) {
-                        System.out.println(val + " (" + key + ")");
-                    } else {
-                        System.out.println(val);
-                    }
-                }
-            }
-
+            NLPHelper.printInOccurrenceOrder(null, ocur);
+            
             if (false) {
                 GeoParser parser = GeoParserFactory.getDefault("./IndexDirectory");
 
@@ -142,7 +116,7 @@ public class App
         Span[] names;
         names = nameFinder.find(tokens);
         for (String name : Span.spansToStrings(names, tokens)) {
-            String key = prefix + name;
+            String key = prefix + NLPHelper.cleanString(name);
             if (ocur.containsKey(key)) {
                 ocur.put(key, ocur.get(key) + 1);
             } else {
