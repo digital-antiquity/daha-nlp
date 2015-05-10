@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import org.apache.lucene.util.MathUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

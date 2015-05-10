@@ -8,11 +8,9 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
@@ -73,9 +71,12 @@ public class App
             for (String sentence : sentenceDetector.sentDetect(input)) {
                 Tokenizer tokenizer = new TokenizerME(tModel);
                 String tokens[] = tokenizer.tokenize(sentence);
-                extracted(model, tokens, "Person Name: ");
-                extracted(model2, tokens, "Institution Name: ");
-                extracted(model3, tokens, "Location: ");
+                Map<String, Integer> ocur = processResults(model, tokens);
+                NLPHelper.printInOccurrenceOrder("Person", ocur);
+                ocur = processResults(model2, tokens);
+                NLPHelper.printInOccurrenceOrder("Institution", ocur);
+                ocur = processResults(model3, tokens);
+                NLPHelper.printInOccurrenceOrder("Location", ocur);
             }
 
             // DoccatModel m = new DoccatModel(new FileInputStream(""));
@@ -86,7 +87,6 @@ public class App
             // }
             //
 
-            NLPHelper.printInOccurrenceOrder(null, ocur);
             
             if (false) {
                 GeoParser parser = GeoParserFactory.getDefault("./IndexDirectory");
@@ -107,16 +107,16 @@ public class App
 
     }
 
-    private static Map<String, Integer> ocur = new HashMap();
 
-    private static void extracted(TokenNameFinderModel model3, String[] tokens, String prefix) {
+    private static Map<String,Integer> processResults(TokenNameFinderModel model3, String[] tokens) {
+        Map<String,Integer> ocur = new HashMap<>();
         // https://opennlp.apache.org/documentation/1.5.3/manual/opennlp.html
         NameFinderME nameFinder = new NameFinderME(model3);
 
         Span[] names;
         names = nameFinder.find(tokens);
         for (String name : Span.spansToStrings(names, tokens)) {
-            String key = prefix + NLPHelper.cleanString(name);
+            String key = NLPHelper.cleanString(name);
             if (ocur.containsKey(key)) {
                 ocur.put(key, ocur.get(key) + 1);
             } else {
@@ -124,5 +124,6 @@ public class App
             }
         }
         nameFinder.clearAdaptiveData();
+        return ocur;
     }
 }

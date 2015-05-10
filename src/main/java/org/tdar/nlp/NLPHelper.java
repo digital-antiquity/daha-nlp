@@ -36,8 +36,10 @@ public class NLPHelper {
                 singles.put(key, value);
             }
         }
-        avg = avg / ocur.size();
-
+        if (ocur.size() > 0) {
+            avg = avg / ocur.size();
+        }
+        
         Set<String> toRemove = new HashSet<String>();
         // only combine multi-> single words if we're dealing with people 
         if (type.equalsIgnoreCase("Person")) {
