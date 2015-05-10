@@ -78,8 +78,7 @@ public class StandAloneAnnie {
         File pluginsHome = Gate.getPluginsHome();
         File anniePlugin = new File(pluginsHome, "ANNIE");
         File annieGapp = new File(anniePlugin, "ANNIE_with_defaults.gapp");
-        annieController =
-                (CorpusController) PersistenceManager.loadObjectFromFile(annieGapp);
+        annieController = (CorpusController) PersistenceManager.loadObjectFromFile(annieGapp);
 
         logger.debug("...ANNIE loaded");
     } // initAnnie()
@@ -126,8 +125,7 @@ public class StandAloneAnnie {
             params.put("preserveOriginalContent", new Boolean(true));
             params.put("collectRepositioningInfo", new Boolean(true));
             logger.debug("Creating doc for " + u);
-            Document doc = (Document)
-                    Factory.createResource("gate.corpora.DocumentImpl", params);
+            Document doc = (Document)Factory.createResource("gate.corpora.DocumentImpl", params);
             corpus.add(doc);
         } // for each of args
 
@@ -148,6 +146,7 @@ public class StandAloneAnnie {
             AnnotationSet defaultAnnotSet = doc.getAnnotations();
             Set<String> annotTypesRequired = new HashSet<>();
             annotTypesRequired.add("Person");
+            annotTypesRequired.add("Months");
             annotTypesRequired.add("Location");
             Set<Annotation> peopleAndPlaces = new HashSet<Annotation>(defaultAnnotSet.get(annotTypesRequired));
 
