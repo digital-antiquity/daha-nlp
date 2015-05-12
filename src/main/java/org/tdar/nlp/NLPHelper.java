@@ -77,6 +77,9 @@ public class NLPHelper {
 
         /**
          * Match Shortened Versions of Names
+         * 
+         * TODO: Could query tDAR to see what's actually in tDAR and weight those that match more heavily
+         * 
          */
         for (String key : keySet) {
             String cl = stripClean(key).toLowerCase();

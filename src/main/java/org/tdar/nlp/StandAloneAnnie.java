@@ -27,6 +27,7 @@ import gate.Factory;
 import gate.FeatureMap;
 import gate.Gate;
 import gate.GateConstants;
+import gate.LanguageAnalyser;
 import gate.corpora.RepositioningInfo;
 import gate.util.GateException;
 import gate.util.persistence.PersistenceManager;
@@ -34,11 +35,14 @@ import gate.util.persistence.PersistenceManager;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -88,9 +92,12 @@ public class StandAloneAnnie {
         annieController.setCorpus(corpus);
     } // setCorpus
 
-    /** Run ANNIE */
-    public void execute() throws GateException {
+    /** Run ANNIE 
+     * @throws MalformedURLException */
+    public void execute() throws GateException, MalformedURLException {
         logger.debug("Running ANNIE...");
+//        annieController.getPRs().add((gate.LanguageAnalyser)Factory.createResource("gate.creole.gazetteer.DefaultGazetteer",
+//                gate.Utils.featureMap("listsURL", new File("gate/plugins/ANNIE/resources/gazetteer/lists.def").toURI().toURL(),"encoding", "UTF-8")));
         annieController.execute();
         logger.debug("...ANNIE complete");
     } // execute()
@@ -125,9 +132,19 @@ public class StandAloneAnnie {
             params.put("preserveOriginalContent", new Boolean(true));
             params.put("collectRepositioningInfo", new Boolean(true));
             logger.debug("Creating doc for " + u);
-            Document doc = (Document)Factory.createResource("gate.corpora.DocumentImpl", params);
+            Document doc = (Document) Factory.createResource("gate.corpora.DocumentImpl", params);
             corpus.add(doc);
         } // for each of args
+
+        FeatureMap params = Factory.newFeatureMap();
+        params.put("listsURL", "file:///Users/abrin/Documents/workspace/nlp-playground/nlp/gate/plugins/ANNIE/resources/gazetteer/lists.def");
+        LanguageAnalyser mainGazetteer = (LanguageAnalyser) Factory.createResource("gate.creole.gazetteer.DefaultGazetteer", params);
+        List prs = new ArrayList(annie.annieController.getPRs());
+        prs.add(mainGazetteer);
+        annie.annieController.setPRs(prs);
+//        params = Factory.newFeatureMap();
+//        params.put("bootstrapGazetteer", mainGazetteer);
+//        LanguageAnalyser sharedGazetteer = (LanguageAnalyser) Factory.createResource("gate.creole.gazetteer.SharedDefaultGazetteer", params);
 
         // tell the pipeline about the corpus and run it
         annie.setCorpus(corpus);
@@ -142,12 +159,25 @@ public class StandAloneAnnie {
         Map<String, Map<String, Integer>> types = new HashMap<>();
 
         while (iter.hasNext()) {
-            Document doc = (Document) iter.next();
+            Document doc = iter.next();
             AnnotationSet defaultAnnotSet = doc.getAnnotations();
+            Iterator<Annotation> iterator = defaultAnnotSet.iterator();
+            Set<String> tp = new HashSet<String>();
+            while (iterator.hasNext()) {
+                Annotation ann = iterator.next();
+                tp.add(ann.getType());
+            }
+            System.out.println(tp);
             Set<String> annotTypesRequired = new HashSet<>();
+            // [YearTemp, Organization, Address, Percent, Discard, Token, Date, Money, Identifier, Unknown, Lookup, 
+            // SpaceToken, Split, Sentence, Person, NumberLetter, Location]
+
             annotTypesRequired.add("Person");
-            annotTypesRequired.add("Months");
             annotTypesRequired.add("Location");
+            annotTypesRequired.add("Identifier");
+            annotTypesRequired.add("Organization");
+            annotTypesRequired.add("Lookup");
+            annotTypesRequired.add("state_us");
             Set<Annotation> peopleAndPlaces = new HashSet<Annotation>(defaultAnnotSet.get(annotTypesRequired));
 
             FeatureMap features = doc.getFeatures();
@@ -184,7 +214,7 @@ public class StandAloneAnnie {
         SortedAnnotationList sortedAnnotations = new SortedAnnotationList();
 
         while (it.hasNext()) {
-            currAnnot = (Annotation) it.next();
+            currAnnot = it.next();
             sortedAnnotations.addSortedExclusive(currAnnot);
         } // while
 
