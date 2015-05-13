@@ -1,7 +1,3 @@
-cultures.lst:Culture
-materials.lst:Material Type
-investigations.lst:Investigation Type
-sitetype.lst:Site Type
 abbreviations.lst:stop
 adbc.lst:adbc
 airports.lst:location:airport

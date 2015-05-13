@@ -28,7 +28,11 @@ import gate.FeatureMap;
 import gate.Gate;
 import gate.GateConstants;
 import gate.LanguageAnalyser;
+import gate.ProcessingResource;
+import gate.annotation.AnnotationSetImpl;
 import gate.corpora.RepositioningInfo;
+import gate.creole.ConditionalSerialAnalyserController;
+import gate.creole.SerialAnalyserController;
 import gate.util.GateException;
 import gate.util.persistence.PersistenceManager;
 
@@ -66,9 +70,12 @@ public class StandAloneAnnie {
     final static String startTagPart_2 = "";// "\" title=\"";
     final static String startTagPart_3 = "";// "\" style=\"background:Red;\">";
     final static String endTag = "";// "</span>";
+    private static URL docUrl;
 
     /** The Corpus Pipeline application to contain ANNIE */
-    private CorpusController annieController;
+    private ConditionalSerialAnalyserController annieController;
+    private LanguageAnalyser mainGazetteer;
+    private Corpus corpus;
 
     /**
      * Initialise the ANNIE system. This creates a "corpus pipeline"
@@ -82,7 +89,29 @@ public class StandAloneAnnie {
         File pluginsHome = Gate.getPluginsHome();
         File anniePlugin = new File(pluginsHome, "ANNIE");
         File annieGapp = new File(anniePlugin, "ANNIE_with_defaults.gapp");
-        annieController = (CorpusController) PersistenceManager.loadObjectFromFile(annieGapp);
+        annieController = (ConditionalSerialAnalyserController) PersistenceManager.loadObjectFromFile(annieGapp);
+
+        ProcessingResource token = (ProcessingResource) Factory.createResource("gate.creole.tokeniser.DefaultTokeniser", Factory.newFeatureMap());
+
+        // corpus = (Corpus) Factory.createResource("gate.corpora.CorpusImpl");
+        // corpus.add(doc);
+        File gateHome = Gate.getGateHome();
+
+        Gate.getCreoleRegister().registerDirectories(new File(pluginsHome, "ANNIE").toURI().toURL());
+        // http://stackoverflow.com/questions/15041809/add-custom-jape-file-in-gate-source-code
+        // LanguageAnalyser jape = (LanguageAnalyser)Factory.createResource(
+        // "gate.creole.Transducer", gate.Utils.featureMap(
+        // "grammarURL", "file:///D:/misc_workspace/gate-7.1-build4485-SRC/plugins/ANNIE/resources/NE/SportsCategory.jape","encoding", "UTF-8"));
+        // jape.setCorpus(corpus);
+        // jape.setDocument(doc);
+        // jape.execute();
+
+        // annieController = (ConditionalSerialAnalyserController) Factory.createResource("gate.creole.ConditionalSerialAnalyserController",
+        // Factory.newFeatureMap(), Factory.newFeatureMap(),"ANNIE");
+        FeatureMap params = Factory.newFeatureMap();
+        params.put("listsURL", "file:///Users/abrin/Documents/workspace/nlp-playground/nlp/gate/tdar/lists.def");
+        mainGazetteer = (LanguageAnalyser) Factory.createResource("gate.creole.gazetteer.DefaultGazetteer", params);
+        annieController.add((ProcessingResource) mainGazetteer.init());
 
         logger.debug("...ANNIE loaded");
     } // initAnnie()
@@ -90,15 +119,31 @@ public class StandAloneAnnie {
     /** Tell ANNIE's controller about the corpus you want to run on */
     public void setCorpus(Corpus corpus) {
         annieController.setCorpus(corpus);
+        this.corpus = corpus;
     } // setCorpus
 
-    /** Run ANNIE 
-     * @throws MalformedURLException */
+    /**
+     * Run ANNIE
+     * 
+     * @throws MalformedURLException
+     */
     public void execute() throws GateException, MalformedURLException {
         logger.debug("Running ANNIE...");
-//        annieController.getPRs().add((gate.LanguageAnalyser)Factory.createResource("gate.creole.gazetteer.DefaultGazetteer",
-//                gate.Utils.featureMap("listsURL", new File("gate/plugins/ANNIE/resources/gazetteer/lists.def").toURI().toURL(),"encoding", "UTF-8")));
         annieController.execute();
+        // FeatureMap params = Factory.newFeatureMap();
+        // params.put("sourceUrl", docUrl);
+        // params.put("preserveOriginalContent", new Boolean(true));
+        // params.put("collectRepositioningInfo", new Boolean(true));
+        // mainGazetteer.setDocument((Document) Factory.createResource("gate.corpora.DocumentImpl", params));
+        // mainGazetteer.setCorpus(corpus);
+        // mainGazetteer.execute();
+        // AnnotationSetImpl ann = (AnnotationSetImpl) mainGazetteer.getDocument().getAnnotations();
+        // System.out.println(" ...Total annotation: " + ann.getAllTypes());
+        // for (int i = ann.size() - 1; i >= 0; --i) {
+        // Annotation currAnnot = (Annotation) ann.get(i);
+        // System.out.println(currAnnot.getFeatures());
+        // }
+        //
         logger.debug("...ANNIE complete");
     } // execute()
 
@@ -125,26 +170,15 @@ public class StandAloneAnnie {
         // create a GATE corpus and add a document for each command-line
         // argument
         Corpus corpus = Factory.newCorpus("StandAloneAnnie corpus");
-        for (int i = 0; i < args.length; i++) {
-            URL u = new URL(args[i]);
-            FeatureMap params = Factory.newFeatureMap();
-            params.put("sourceUrl", u);
-            params.put("preserveOriginalContent", new Boolean(true));
-            params.put("collectRepositioningInfo", new Boolean(true));
-            logger.debug("Creating doc for " + u);
-            Document doc = (Document) Factory.createResource("gate.corpora.DocumentImpl", params);
-            corpus.add(doc);
-        } // for each of args
-
+        annie.setCorpus(corpus);
+        docUrl = new URL(args[0]);
         FeatureMap params = Factory.newFeatureMap();
-        params.put("listsURL", "file:///Users/abrin/Documents/workspace/nlp-playground/nlp/gate/plugins/ANNIE/resources/gazetteer/lists.def");
-        LanguageAnalyser mainGazetteer = (LanguageAnalyser) Factory.createResource("gate.creole.gazetteer.DefaultGazetteer", params);
-        List prs = new ArrayList(annie.annieController.getPRs());
-        prs.add(mainGazetteer);
-        annie.annieController.setPRs(prs);
-//        params = Factory.newFeatureMap();
-//        params.put("bootstrapGazetteer", mainGazetteer);
-//        LanguageAnalyser sharedGazetteer = (LanguageAnalyser) Factory.createResource("gate.creole.gazetteer.SharedDefaultGazetteer", params);
+        params.put("sourceUrl", docUrl);
+        params.put("preserveOriginalContent", new Boolean(true));
+        params.put("collectRepositioningInfo", new Boolean(true));
+        logger.debug("Creating doc for " + docUrl);
+        Document doc = (Document) Factory.createResource("gate.corpora.DocumentImpl", params);
+        corpus.add(doc);
 
         // tell the pipeline about the corpus and run it
         annie.setCorpus(corpus);
@@ -153,59 +187,55 @@ public class StandAloneAnnie {
         logger.debug("Done:" + new Date());
 
         // for each document, get an XML document with the
-        // person and location names added
-        Iterator<Document> iter = corpus.iterator();
         int count = 0;
         Map<String, Map<String, Integer>> types = new HashMap<>();
 
-        while (iter.hasNext()) {
-            Document doc = iter.next();
-            AnnotationSet defaultAnnotSet = doc.getAnnotations();
-            Iterator<Annotation> iterator = defaultAnnotSet.iterator();
-            Set<String> tp = new HashSet<String>();
-            while (iterator.hasNext()) {
-                Annotation ann = iterator.next();
-                tp.add(ann.getType());
-            }
-            System.out.println(tp);
-            Set<String> annotTypesRequired = new HashSet<>();
-            // [YearTemp, Organization, Address, Percent, Discard, Token, Date, Money, Identifier, Unknown, Lookup, 
-            // SpaceToken, Split, Sentence, Person, NumberLetter, Location]
+        AnnotationSet defaultAnnotSet = doc.getAnnotations();
+        Iterator<Annotation> iterator = defaultAnnotSet.iterator();
+        Set<String> tp = new HashSet<String>();
+        while (iterator.hasNext()) {
+            Annotation ann = iterator.next();
+            tp.add(ann.getType());
+        }
 
-            annotTypesRequired.add("Person");
-            annotTypesRequired.add("Location");
-            annotTypesRequired.add("Identifier");
-            annotTypesRequired.add("Organization");
-            annotTypesRequired.add("Lookup");
-            annotTypesRequired.add("state_us");
-            Set<Annotation> peopleAndPlaces = new HashSet<Annotation>(defaultAnnotSet.get(annotTypesRequired));
+        System.out.println(tp);
+        Set<String> annotTypesRequired = new HashSet<>();
+        // [YearTemp, Organization, Address, Percent, Discard, Token, Date, Money, Identifier, Unknown, Lookup,
+        // SpaceToken, Split, Sentence, Person, NumberLetter, Location]
 
-            FeatureMap features = doc.getFeatures();
-            String originalContent = (String) features.get(GateConstants.ORIGINAL_DOCUMENT_CONTENT_FEATURE_NAME);
-            RepositioningInfo info = (RepositioningInfo) features.get(GateConstants.DOCUMENT_REPOSITIONING_INFO_FEATURE_NAME);
+        annotTypesRequired.add("Person");
+        annotTypesRequired.add("Location");
+        annotTypesRequired.add("Identifier");
+        annotTypesRequired.add("Organization");
+        annotTypesRequired.add("Lookup");
+        annotTypesRequired.add("Test");
+        Set<Annotation> peopleAndPlaces = new HashSet<Annotation>(defaultAnnotSet.get(annotTypesRequired));
 
-            count++;
-            File file = new File("StANNIE_" + count + ".HTML");
-            logger.debug("File name: '" + file.getAbsolutePath() + "'");
-            if (originalContent != null && info != null) {
-                logger.debug("OrigContent and reposInfo existing. Generate file...");
-                process(types, peopleAndPlaces, originalContent, info, file);
-            } // if - should generate
-            else if (originalContent != null) {
-                logger.debug("OrigContent existing. Generate file...");
-                process(types, peopleAndPlaces, originalContent, null, file);
-            }
-            else {
-                logger.debug("Content : " + originalContent);
-                logger.debug("Repositioning: " + info);
-            }
+        FeatureMap features = doc.getFeatures();
+        String originalContent = (String) features.get(GateConstants.ORIGINAL_DOCUMENT_CONTENT_FEATURE_NAME);
+        RepositioningInfo info = (RepositioningInfo) features.get(GateConstants.DOCUMENT_REPOSITIONING_INFO_FEATURE_NAME);
 
-            for (String key : types.keySet()) {
-                NLPHelper.printInOccurrenceOrder(key, types.get(key));
-            }
+        count++;
+        File file = new File("StANNIE_" + count + ".HTML");
+        logger.debug("File name: '" + file.getAbsolutePath() + "'");
+        if (originalContent != null && info != null) {
+            logger.debug("OrigContent and reposInfo existing. Generate file...");
+            process(types, peopleAndPlaces, originalContent, info, file);
+        } // if - should generate
+        else if (originalContent != null) {
+            logger.debug("OrigContent existing. Generate file...");
+            process(types, peopleAndPlaces, originalContent, null, file);
+        }
+        else {
+            logger.debug("Content : " + originalContent);
+            logger.debug("Repositioning: " + info);
+        }
 
-        } // for each doc
-    } // main
+        for (String key : types.keySet()) {
+            NLPHelper.printInOccurrenceOrder(key, types.get(key));
+        }
+
+    }
 
     private static StringBuffer process(Map<String, Map<String, Integer>> types, Set<Annotation> peopleAndPlaces, String originalContent,
             RepositioningInfo info, File file) throws IOException {
@@ -232,15 +262,20 @@ public class StandAloneAnnie {
                 insertPositionStart = info.getOriginalPos(insertPositionStart);
                 insertPositionEnd = info.getOriginalPos(insertPositionEnd, true);
             }
-
+            Object majorType = currAnnot.getFeatures().get("majorType");
+            // System.out.println(currAnnot.getId() + " |" + majorType);
             if (insertPositionEnd != -1 && insertPositionStart != -1) {
-                if (!types.containsKey(currAnnot.getType())) {
-                    types.put(currAnnot.getType(), new HashMap<String, Integer>());
+                String type = currAnnot.getType();
+                if (majorType != null) {
+                    type = (String) majorType;
                 }
-                increment(currAnnot, editableContent, insertPositionEnd, insertPositionStart, types);
+                if (!types.containsKey(type)) {
+                    types.put(type, new HashMap<String, Integer>());
+                }
+                increment(type, editableContent, insertPositionEnd, insertPositionStart, types);
                 editableContent.insert((int) insertPositionEnd, endTag);
                 editableContent.insert((int) insertPositionStart, startTagPart_3);
-                editableContent.insert((int) insertPositionStart, currAnnot.getType());
+                editableContent.insert((int) insertPositionStart, type);
                 editableContent.insert((int) insertPositionStart, startTagPart_2);
                 editableContent.insert((int) insertPositionStart, currAnnot.getId().toString());
                 editableContent.insert((int) insertPositionStart, startTagPart_1);
@@ -255,15 +290,17 @@ public class StandAloneAnnie {
         return editableContent;
     }
 
-    private static void increment(Annotation currAnnot, StringBuffer editableContent, long insertPositionEnd, long insertPositionStart,
-            Map<String, Map<String, Integer>> types) {
-        Map<String, Integer> map = types.get(currAnnot.getType());
-        String str = editableContent.substring((int) insertPositionStart, (int) insertPositionEnd);
+    private static void increment(String type, StringBuffer editableContent, long insertEnd, long insertStart, Map<String, Map<String, Integer>> types) {
+        Map<String, Integer> map = types.get(type);
+        String str = editableContent.substring((int) insertStart, (int) insertEnd);
         str = NLPHelper.cleanString(str);
-        if (!map.containsKey(str)) {
-            map.put(str, 1);
-        } else {
-            map.put(str, map.get(str) + 1);
+        String first = type.substring(0, 1);
+        if (first.toUpperCase().equals(first)) {
+            if (!map.containsKey(str)) {
+                map.put(str, 1);
+            } else {
+                map.put(str, map.get(str) + 1);
+            }
         }
     }
 

@@ -51,7 +51,7 @@ public class NLPHelper {
                 for (String key : multiWord.keySet()) {
                     // note this will inappropriately boost one last name match over another, eg. Adam Smith, and Steve Smith, with Smith
                     String parent = stripClean(key);
-                    if (parent.endsWith(" " + txt)) {
+                    if (parent.toLowerCase().endsWith(" " + txt.toLowerCase())) {
                         toRemove.add(txt);
                         multiWord.put(key, multiWord.get(key) + entry.getValue());
                     }
