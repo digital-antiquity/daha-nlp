@@ -168,7 +168,13 @@ public class NLPHelper {
     public static String cleanString(String key) {
         key = key.replaceAll("[\r\n]", "");
         key = key.replaceAll("\\s+", " ").trim();
-        return key;
+        if (key.indexOf("<") > -1) {
+            key = key.substring(0, key.indexOf("<"));
+        }
+        if (key.indexOf(">") > -1) {
+            key = key.substring(0, key.indexOf(">"));
+        }
+        return key.trim();
     }
 
 }

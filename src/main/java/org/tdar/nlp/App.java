@@ -34,6 +34,10 @@ import com.bericotech.clavin.resolver.ResolvedLocation;
  */
 public class App
 {
+    private static final int MIN_TERM_LENGTH = 3;
+    private static final boolean REMOVE_HTML_TERMS = true;
+
+
     public static void main(String[] args) throws Exception
     {
         String input = new String(
@@ -44,6 +48,7 @@ public class App
         if (args[0] != null) {
             File file = new File(args[0]);
             input = FileUtils.readFileToString(file);
+            input = StringUtils.replace(input, "&nbsp;", " ");
         }
         try {
             List<URL> urls = new ArrayList<URL>();
@@ -68,16 +73,23 @@ public class App
             TokenNameFinderModel model = new TokenNameFinderModel(new FileInputStream("en-ner-person.bin"));
             TokenNameFinderModel model2 = new TokenNameFinderModel(new FileInputStream("en-ner-organization.bin"));
             TokenNameFinderModel model3 = new TokenNameFinderModel(new FileInputStream("en-ner-location.bin"));
+            
+            // FIXME: Handle cases like 
+            // Person 251 | Debbie Corbett Diane Cure Santo Cuollo Terry Dean Pete Devine Jean Elsasser Tammy Ewing Scott Fedick Joe Finken Debbi Foldi Paul Fortin Dale Fournier Mark Gaff
+
+            Map<String, Integer> ocurP = new HashMap<>();
+            Map<String, Integer> ocurI = new HashMap<>();
+            Map<String, Integer> ocurL = new HashMap<>();
             for (String sentence : sentenceDetector.sentDetect(input)) {
                 Tokenizer tokenizer = new TokenizerME(tModel);
                 String tokens[] = tokenizer.tokenize(sentence);
-                Map<String, Integer> ocur = processResults(model, tokens);
-                NLPHelper.printInOccurrenceOrder("Person", ocur);
-                ocur = processResults(model2, tokens);
-                NLPHelper.printInOccurrenceOrder("Institution", ocur);
-                ocur = processResults(model3, tokens);
-                NLPHelper.printInOccurrenceOrder("Location", ocur);
+                processResults(model, tokens, ocurP);
+                processResults(model2, tokens, ocurI);
+                processResults(model3, tokens, ocurL);
             }
+            NLPHelper.printInOccurrenceOrder("Person", ocurP);
+            NLPHelper.printInOccurrenceOrder("Institution", ocurI);
+            NLPHelper.printInOccurrenceOrder("Location", ocurL);
 
             // DoccatModel m = new DoccatModel(new FileInputStream(""));
             // DocumentCategorizerME myCategorizer = new DocumentCategorizerME(m);
@@ -108,8 +120,7 @@ public class App
     }
 
 
-    private static Map<String,Integer> processResults(TokenNameFinderModel model3, String[] tokens) {
-        Map<String,Integer> ocur = new HashMap<>();
+    private static Map<String,Integer> processResults(TokenNameFinderModel model3, String[] tokens, Map<String,Integer> ocur) {
         // https://opennlp.apache.org/documentation/1.5.3/manual/opennlp.html
         NameFinderME nameFinder = new NameFinderME(model3);
 
@@ -117,6 +128,11 @@ public class App
         names = nameFinder.find(tokens);
         for (String name : Span.spansToStrings(names, tokens)) {
             String key = NLPHelper.cleanString(name);
+            
+            if (!stringValid(key)) {
+                continue;
+            }
+            
             if (ocur.containsKey(key)) {
                 ocur.put(key, ocur.get(key) + 1);
             } else {
@@ -125,5 +141,16 @@ public class App
         }
         nameFinder.clearAdaptiveData();
         return ocur;
+    }
+
+
+    private static boolean stringValid(String key) {
+        if ((StringUtils.contains(key, "=\"") || StringUtils.contains(key, "=\'")) && REMOVE_HTML_TERMS) {
+            return false;
+        }
+        if (StringUtils.length(key) > MIN_TERM_LENGTH) {
+            return true;
+        }
+        return false;
     }
 }
