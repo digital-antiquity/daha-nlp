@@ -11,6 +11,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+
+import com.bericotech.clavin.GeoParser;
+import com.bericotech.clavin.GeoParserFactory;
+import com.bericotech.clavin.resolver.ResolvedLocation;
 
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
@@ -20,13 +28,6 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.Span;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-
-import com.bericotech.clavin.GeoParser;
-import com.bericotech.clavin.GeoParserFactory;
-import com.bericotech.clavin.resolver.ResolvedLocation;
 
 /**
  * Hello world!
@@ -86,6 +87,9 @@ public class App
                 processResults(model, tokens, ocurP);
                 processResults(model2, tokens, ocurI);
                 processResults(model3, tokens, ocurL);
+            }
+            for (Entry<String,Integer> ent : ocurI.entrySet()) {
+                System.out.println(ent.getKey() + "\t" + ent.getValue());
             }
             NLPHelper.printInOccurrenceOrder("Person", ocurP);
             NLPHelper.printInOccurrenceOrder("Institution", ocurI);

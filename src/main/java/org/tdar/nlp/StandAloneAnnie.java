@@ -18,10 +18,26 @@
 
 package org.tdar.nlp;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.Vector;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gate.Annotation;
 import gate.AnnotationSet;
 import gate.Corpus;
-import gate.CorpusController;
 import gate.Document;
 import gate.Factory;
 import gate.FeatureMap;
@@ -29,30 +45,10 @@ import gate.Gate;
 import gate.GateConstants;
 import gate.LanguageAnalyser;
 import gate.ProcessingResource;
-import gate.annotation.AnnotationSetImpl;
 import gate.corpora.RepositioningInfo;
 import gate.creole.ConditionalSerialAnalyserController;
-import gate.creole.SerialAnalyserController;
 import gate.util.GateException;
 import gate.util.persistence.PersistenceManager;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class illustrates how to use ANNIE as a sausage machine
@@ -110,8 +106,13 @@ public class StandAloneAnnie {
         // Factory.newFeatureMap(), Factory.newFeatureMap(),"ANNIE");
         FeatureMap params = Factory.newFeatureMap();
         params.put("listsURL", "file:///Users/abrin/Documents/workspace/nlp-playground/nlp/gate/tdar/lists.def");
+        try {
         mainGazetteer = (LanguageAnalyser) Factory.createResource("gate.creole.gazetteer.DefaultGazetteer", params);
         annieController.add((ProcessingResource) mainGazetteer.init());
+        } catch(Exception e) {
+            logger.debug(e.getMessage());
+            e.printStackTrace();
+        }
 
         logger.debug("...ANNIE loaded");
     } // initAnnie()
@@ -231,6 +232,10 @@ public class StandAloneAnnie {
             logger.debug("Repositioning: " + info);
         }
 
+        for (Entry<String,Integer> ent : types.get("Organization").entrySet()) {
+            System.out.println(ent.getValue() + "\t" + ent.getKey());
+        }
+        
         for (String key : types.keySet()) {
             NLPHelper.printInOccurrenceOrder(key, types.get(key));
         }
