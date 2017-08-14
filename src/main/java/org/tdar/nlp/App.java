@@ -89,7 +89,7 @@ public class App
                 processResults(model3, tokens, ocurL);
             }
             for (Entry<String,Integer> ent : ocurI.entrySet()) {
-                System.out.println(ent.getKey() + "\t" + ent.getValue());
+//                System.out.println(ent.getKey() + "\t" + ent.getValue());
             }
             NLPHelper.printInOccurrenceOrder("Person", ocurP);
             NLPHelper.printInOccurrenceOrder("Institution", ocurI);

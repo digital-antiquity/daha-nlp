@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
 
 public class NLPHelper {
 
@@ -31,7 +32,10 @@ public class NLPHelper {
             key = cleanString(key);
             avg += value;
             if (key.contains(" ")) {
-                multiWord.put(key, value);
+                // Skip lots of words
+                if (StringUtils.countMatches(key, " ") < 5) {
+                    multiWord.put(key, value);
+                }
             } else {
                 singles.put(key, value);
             }
@@ -41,7 +45,7 @@ public class NLPHelper {
         }
         
         Set<String> toRemove = new HashSet<String>();
-        // only combine multi-> single words if we're dealing with people 
+        // only combine multi-> single words if we're dealing with people
         if (type.equalsIgnoreCase("Person")) {
             // for each single word phrase, try and fit it into a multi-word and combine
             Iterator<Entry<String, Integer>> iterator = singles.entrySet().iterator();
@@ -146,12 +150,58 @@ public class NLPHelper {
                     header += " ";
                 }
                 if (key > avg) {
-                    System.out.println(header + key + " | " + val);
+                    if (type.equalsIgnoreCase("person") &&  Pattern.compile("\\d").matcher(val).find()) {
+                        
+                    } else if (containsStopWord(val)) {}
+                    else if (percentOneLetter(val) > 74) {} else {
+                        System.out.println(header + key + " | " + val);
+                    }
                 } else {
                     // System.out.println(header + "| " + val);
                 }
             }
         }
+    }
+
+    private static boolean containsStopWord(String val) {
+        if (StringUtils.containsIgnoreCase(val, "investigation")) {
+            return true;
+        }
+        if (StringUtils.containsIgnoreCase(val, "catalog")) {
+            return true;
+        }
+        if (StringUtils.containsIgnoreCase(val, " and ")) {
+            return true;
+        }
+        if (StringUtils.containsIgnoreCase(val, " or ")) {
+            return true;
+        }
+        if (StringUtils.containsIgnoreCase(val, "appendix")) {
+            return true;
+        }
+        if (StringUtils.containsIgnoreCase(val, "submitted")) {
+            return true;
+        }
+        if (StringUtils.containsIgnoreCase(val, "expedition")) {
+            return true;
+        }
+        return false;
+    }
+
+    /** 
+     * return the % of 1 ltter words in the name
+     * @param header
+     * @return
+     */
+    private static int percentOneLetter(String header) {
+        String[] words = header.split(" ");
+        int letterCount = 0;
+        for (String w : words) {
+            if (w.length() == 1) {
+                letterCount++;
+            }
+        }
+        return (int) (((float)letterCount / (float)words.length) * 100);
     }
 
     /**
@@ -168,6 +218,7 @@ public class NLPHelper {
     public static String cleanString(String key) {
         key = key.replaceAll("[\r\n]", "");
         key = key.replaceAll("\\s+", " ").trim();
+        key = key.replaceAll("['’]s", "");
         if (key.indexOf("<") > -1) {
             key = key.substring(0, key.indexOf("<"));
         }
