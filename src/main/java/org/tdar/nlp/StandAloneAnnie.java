@@ -237,7 +237,7 @@ public class StandAloneAnnie {
         }
         
         for (String key : types.keySet()) {
-            NLPHelper.printInOccurrenceOrder(key, types.get(key));
+//            NLPHelper.printInOccurrenceOrder(key, types.get(key));
         }
 
     }
@@ -298,7 +298,7 @@ public class StandAloneAnnie {
     private static void increment(String type, StringBuffer editableContent, long insertEnd, long insertStart, Map<String, Map<String, Integer>> types) {
         Map<String, Integer> map = types.get(type);
         String str = editableContent.substring((int) insertStart, (int) insertEnd);
-        str = NLPHelper.cleanString(str);
+        //str = NLPHelper.cleanString(str);
         String first = type.substring(0, 1);
         if (first.toUpperCase().equals(first)) {
             if (!map.containsKey(str)) {

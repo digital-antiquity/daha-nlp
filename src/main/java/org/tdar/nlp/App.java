@@ -35,8 +35,6 @@ import opennlp.tools.util.Span;
  */
 public class App
 {
-    private static final int MIN_TERM_LENGTH = 3;
-    private static final boolean REMOVE_HTML_TERMS = true;
 
 
     public static void main(String[] args) throws Exception
@@ -77,23 +75,21 @@ public class App
             
             // FIXME: Handle cases like 
             // Person 251 | Debbie Corbett Diane Cure Santo Cuollo Terry Dean Pete Devine Jean Elsasser Tammy Ewing Scott Fedick Joe Finken Debbi Foldi Paul Fortin Dale Fournier Mark Gaff
-
-            Map<String, Integer> ocurP = new HashMap<>();
-            Map<String, Integer> ocurI = new HashMap<>();
-            Map<String, Integer> ocurL = new HashMap<>();
+            System.out.println("------------------");
+            NLPHelper person = new NLPHelper();
+            NLPHelper institution = new NLPHelper();
+            NLPHelper location = new NLPHelper();
             for (String sentence : sentenceDetector.sentDetect(input)) {
                 Tokenizer tokenizer = new TokenizerME(tModel);
                 String tokens[] = tokenizer.tokenize(sentence);
-                processResults(model, tokens, ocurP);
-                processResults(model2, tokens, ocurI);
-                processResults(model3, tokens, ocurL);
+                processResults(model, tokens, person,"person");
+                processResults(model2, tokens, institution, "institution");
+                processResults(model3, tokens, location, "location");
             }
-            for (Entry<String,Integer> ent : ocurI.entrySet()) {
-//                System.out.println(ent.getKey() + "\t" + ent.getValue());
-            }
-            NLPHelper.printInOccurrenceOrder("Person", ocurP);
-            NLPHelper.printInOccurrenceOrder("Institution", ocurI);
-            NLPHelper.printInOccurrenceOrder("Location", ocurL);
+
+            person.printInOccurrenceOrder("Person");
+            institution.printInOccurrenceOrder("Institution");
+            location.printInOccurrenceOrder("Location");
 
             // DoccatModel m = new DoccatModel(new FileInputStream(""));
             // DocumentCategorizerME myCategorizer = new DocumentCategorizerME(m);
@@ -122,39 +118,20 @@ public class App
         }
 
     }
+    
 
-
-    private static Map<String,Integer> processResults(TokenNameFinderModel model3, String[] tokens, Map<String,Integer> ocur) {
+    private static void processResults(TokenNameFinderModel model3, String[] tokens, NLPHelper helper, String label) {
         // https://opennlp.apache.org/documentation/1.5.3/manual/opennlp.html
         NameFinderME nameFinder = new NameFinderME(model3);
 
         Span[] names;
         names = nameFinder.find(tokens);
         for (String name : Span.spansToStrings(names, tokens)) {
-            String key = NLPHelper.cleanString(name);
-            
-            if (!stringValid(key)) {
-                continue;
-            }
-            
-            if (ocur.containsKey(key)) {
-                ocur.put(key, ocur.get(key) + 1);
-            } else {
-                ocur.put(key, 1);
-            }
+            System.out.println(label+"|"+name);
+            helper.appendOcurrenceMap(name);
         }
         nameFinder.clearAdaptiveData();
-        return ocur;
     }
 
-
-    private static boolean stringValid(String key) {
-        if ((StringUtils.contains(key, "=\"") || StringUtils.contains(key, "=\'")) && REMOVE_HTML_TERMS) {
-            return false;
-        }
-        if (StringUtils.length(key) > MIN_TERM_LENGTH) {
-            return true;
-        }
-        return false;
-    }
 }
+

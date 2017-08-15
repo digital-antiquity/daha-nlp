@@ -15,11 +15,33 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
 
 public class NLPHelper {
+    private static final int MIN_TERM_LENGTH = 3;
+    private static final boolean REMOVE_HTML_TERMS = true;
+    private Map<String, Integer> ocur = new HashMap<>();
 
-    public static void printInOccurrenceOrder(String type, Map<String, Integer> ocur) {
+    private boolean stringValid(String key) {
+        if ((StringUtils.contains(key, "=\"") || StringUtils.contains(key, "=\'")) && REMOVE_HTML_TERMS) {
+            return false;
+        }
+        if (StringUtils.length(key) > MIN_TERM_LENGTH) {
+            return true;
+        }
+        return false;
+    }
+
+    public void appendOcurrenceMap(String name) {
+        String key = cleanString(name);
+
+        if (!stringValid(key)) {
+            return;
+        }
+
+        ocur.put(key, ocur.getOrDefault(key, 0) + 1);
+    }
+
+    public void printInOccurrenceOrder(String type) {
         Map<Integer, List<String>> reverse = new HashMap<Integer, List<String>>();
         int avg = 0;
         Map<String, Integer> singles = new TreeMap<String, Integer>(String.CASE_INSENSITIVE_ORDER);
@@ -43,7 +65,7 @@ public class NLPHelper {
         if (ocur.size() > 0) {
             avg = avg / ocur.size();
         }
-        
+
         Set<String> toRemove = new HashSet<String>();
         // only combine multi-> single words if we're dealing with people
         if (type.equalsIgnoreCase("Person")) {
@@ -114,8 +136,8 @@ public class NLPHelper {
                     continue;
                 }
                 String clean = stripClean(keyi).toLowerCase();
-//                int dist = StringUtils.getLevenshteinDistance(cl, clean);
-                if (clean.equalsIgnoreCase(init) || clean.equalsIgnoreCase(init2) || clean.equalsIgnoreCase(init3) ) {
+                // int dist = StringUtils.getLevenshteinDistance(cl, clean);
+                if (clean.equalsIgnoreCase(init) || clean.equalsIgnoreCase(init2) || clean.equalsIgnoreCase(init3)) {
                     toRemove.add(keyi);
                     multiWord.put(key, multiWord.get(key) + multiWord.get(keyi));
                 }
@@ -150,10 +172,11 @@ public class NLPHelper {
                     header += " ";
                 }
                 if (key > avg) {
-                    if (type.equalsIgnoreCase("person") &&  Pattern.compile("\\d").matcher(val).find()) {
-                        
-                    } else if (containsStopWord(val)) {}
-                    else if (percentOneLetter(val) > 74) {} else {
+                    if (type.equalsIgnoreCase("person") && Pattern.compile("\\d").matcher(val).find()) {
+
+                    } else if (containsStopWord(val)) {
+                    } else if (percentOneLetter(val) > 74) {
+                    } else {
                         System.out.println(header + key + " | " + val);
                     }
                 } else {
@@ -188,8 +211,9 @@ public class NLPHelper {
         return false;
     }
 
-    /** 
+    /**
      * return the % of 1 ltter words in the name
+     * 
      * @param header
      * @return
      */
@@ -201,7 +225,7 @@ public class NLPHelper {
                 letterCount++;
             }
         }
-        return (int) (((float)letterCount / (float)words.length) * 100);
+        return (int) (((float) letterCount / (float) words.length) * 100);
     }
 
     /**
@@ -210,12 +234,12 @@ public class NLPHelper {
      * @param key
      * @return
      */
-    private static String stripClean(String key) {
+    private String stripClean(String key) {
         String mat = key.toLowerCase().replaceAll("[^\\w\\s]", "");
         return mat;
     }
 
-    public static String cleanString(String key) {
+    public String cleanString(String key) {
         key = key.replaceAll("[\r\n]", "");
         key = key.replaceAll("\\s+", " ").trim();
         key = key.replaceAll("['’]s", "");
