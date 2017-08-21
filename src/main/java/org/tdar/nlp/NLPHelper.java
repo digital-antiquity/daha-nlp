@@ -17,11 +17,11 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
 public class NLPHelper {
-    private static final int SKIP_PHRASES_LONGER_THAN = 5;
-    private static String[] stopWords = { "investigation", "catalog", " and ", " or ", "appendix", "submitted", "expection" };
-    private static final String NUMERIC_PUNCTUATION = "^[\\d\\s/\\.;\\(\\)\\[\\]\\?\\-\\_\\,]+$";
-    private static final int MIN_TERM_LENGTH = 3;
-    private static final boolean REMOVE_HTML_TERMS = true;
+    public static final int SKIP_PHRASES_LONGER_THAN = 5;
+    public static String[] stopWords = { "investigation", "catalog", " and ", " or ", "appendix", "submitted", "expection" };
+    public static final String NUMERIC_PUNCTUATION = "^[\\d\\s/\\.;\\(\\)\\[\\]\\?\\-\\_\\,]+$";
+    public static final int MIN_TERM_LENGTH = 3;
+    public static final boolean REMOVE_HTML_TERMS = true;
     private Map<String, TermWrapper> ocur = new HashMap<>();
     private String type;
 
@@ -41,16 +41,52 @@ public class NLPHelper {
         if (containsStopWord(key) && "person".equals(type)) {
             return false;
         }
-        if (percentOneLetter(key) > 74 && "person".equals(type)) {
-            return false;
-        }
-        if (percentNumber(key) > 50) {
+        int percentOneLetter = percentOneLetter(key);
+        if (percentOneLetter > 74 && "person".equals(type)) {
             return false;
         }
 
-        if (StringUtils.length(key) > MIN_TERM_LENGTH) {
+        if (percentOneLetter > 50) {
+            return false;
+        }
+
+        if (percentNumberWords(key) > 50) {
+            return false;
+        }
+
+        if (percentNumericCharacters(key) > 50) {
+            return false;
+        }
+
+        if (unmatchedChars(key)) {
+            return false;
+        }
+        
+        if (StringUtils.length(key) < MIN_TERM_LENGTH) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean unmatchedChars(String key) {
+        int openP = StringUtils.countMatches(key, "(");
+        int closedP = StringUtils.countMatches(key, ")");
+        int openB = StringUtils.countMatches(key, "[");
+        int closedB = StringUtils.countMatches(key, "]");
+        int quote = StringUtils.countMatches(key, "\"");
+
+        if (openP != closedP) {
             return true;
         }
+
+        if (openB != closedB) {
+            return true;
+        }
+        
+        if (quote % 2 != 0) {
+            return true;
+        }
+
         return false;
     }
 
@@ -234,7 +270,7 @@ public class NLPHelper {
      * @param header
      * @return
      */
-    private static int percentNumber(String header) {
+    public static int percentNumberWords(String header) {
         String[] words = header.split(" ");
         int letterCount = 0;
         for (String w : words) {
@@ -246,12 +282,35 @@ public class NLPHelper {
     }
 
     /**
+     * Find the % of characters in a phrase that are numbers (eg. 42 1/22/27 V)
+     * 
+     * @param key
+     * @return
+     */
+    public static int percentNumericCharacters(String key) {
+        int numCount = 0;
+        int totalCount = 0;
+        for (char c : key.toCharArray()) {
+            if (Character.isDigit(c)) {
+                numCount++;
+                totalCount++;
+                continue;
+            }
+            if (Character.isAlphabetic(c)) {
+                totalCount++;
+            }
+        }
+        // System.out.println("total: "+ totalCount + " num:" + numCount);
+        return (int) (((float) numCount / (float) totalCount) * 100);
+    }
+
+    /**
      * Does the string contain a word to ignore
      * 
      * @param val
      * @return
      */
-    private static boolean containsStopWord(String val) {
+    public static boolean containsStopWord(String val) {
         for (String term : stopWords) {
             if (StringUtils.containsIgnoreCase(val, term)) {
                 return true;
@@ -266,7 +325,7 @@ public class NLPHelper {
      * @param header
      * @return
      */
-    private static int percentOneLetter(String header) {
+    public static int percentOneLetter(String header) {
         String[] words = header.split(" ");
         int letterCount = 0;
         for (String w : words) {
