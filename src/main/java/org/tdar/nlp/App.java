@@ -76,20 +76,22 @@ public class App
             // FIXME: Handle cases like 
             // Person 251 | Debbie Corbett Diane Cure Santo Cuollo Terry Dean Pete Devine Jean Elsasser Tammy Ewing Scott Fedick Joe Finken Debbi Foldi Paul Fortin Dale Fournier Mark Gaff
             System.out.println("------------------");
-            NLPHelper person = new NLPHelper();
-            NLPHelper institution = new NLPHelper();
-            NLPHelper location = new NLPHelper();
+            NLPHelper person = new NLPHelper("person");
+            NLPHelper institution = new NLPHelper("institution");
+            NLPHelper location = new NLPHelper("location");
+            int pos = 0;
             for (String sentence : sentenceDetector.sentDetect(input)) {
                 Tokenizer tokenizer = new TokenizerME(tModel);
                 String tokens[] = tokenizer.tokenize(sentence);
-                processResults(model, tokens, person,"person");
-                processResults(model2, tokens, institution, "institution");
-                processResults(model3, tokens, location, "location");
+                processResults(model, tokens, pos, person);
+                processResults(model2, tokens, pos, institution);
+                processResults(model3, tokens, pos, location);
+                pos++;
             }
 
-            person.printInOccurrenceOrder("Person");
-            institution.printInOccurrenceOrder("Institution");
-            location.printInOccurrenceOrder("Location");
+            person.printInOccurrenceOrder();
+            institution.printInOccurrenceOrder();
+            location.printInOccurrenceOrder();
 
             // DoccatModel m = new DoccatModel(new FileInputStream(""));
             // DocumentCategorizerME myCategorizer = new DocumentCategorizerME(m);
@@ -120,15 +122,15 @@ public class App
     }
     
 
-    private static void processResults(TokenNameFinderModel model3, String[] tokens, NLPHelper helper, String label) {
+    private static void processResults(TokenNameFinderModel model3, String[] tokens, int pos, NLPHelper helper) {
         // https://opennlp.apache.org/documentation/1.5.3/manual/opennlp.html
         NameFinderME nameFinder = new NameFinderME(model3);
 
         Span[] names;
         names = nameFinder.find(tokens);
         for (String name : Span.spansToStrings(names, tokens)) {
-            System.out.println(label+"|"+name);
-            helper.appendOcurrenceMap(name);
+//            System.out.println(helper.getType()+"|"+name);
+            helper.appendOcurrenceMap(name, pos);
         }
         nameFinder.clearAdaptiveData();
     }
