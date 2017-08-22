@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
 public class NLPHelper {
+    private static final String PERSON = "person";
     public static final int SKIP_PHRASES_LONGER_THAN = 5;
     public static String[] stopWords = { "investigation", "catalog", " and ", " or ", "appendix", "submitted", "expection" };
     public static final String NUMERIC_PUNCTUATION = "^[\\d\\s/\\.;\\(\\)\\[\\]\\?\\-\\_\\,]+$";
@@ -38,11 +39,11 @@ public class NLPHelper {
             return false;
         }
 
-        if (containsStopWord(key) && "person".equals(type)) {
+        if (containsStopWord(key) && PERSON.equals(type)) {
             return false;
         }
         int percentOneLetter = percentOneLetter(key);
-        if (percentOneLetter > 74 && "person".equals(type)) {
+        if (percentOneLetter > 74 && PERSON.equals(type)) {
             return false;
         }
 
@@ -124,13 +125,26 @@ public class NLPHelper {
             avg = avg / ocur.size();
         }
 
+        WordOverlapAnalyzer multi = new WordOverlapAnalyzer(multiWord.keySet());
+        Map<String, List<String>> analyze = multi.analyze(singles.keySet());
+        for (Entry<String,List<String>> entry : analyze.entrySet()) {
+            TermWrapper keyWrapper = multiWord.get(entry.getKey());
+            for (String val : entry.getValue()) {
+                TermWrapper vw = singles.get(val);
+                vw.setTerm(val);
+                keyWrapper.combine(vw);
+                singles.remove(val);
+            }
+        }
         stripOverlappingSingleMultiWord(type, singles, multiWord);
 
         multiWord.putAll(singles);
 
         combineMultiWordOverlap(type, multiWord);
 
-        Map<Integer, List<String>> reverse = sortByOccurrence(multiWord);
+        
+        Map<Integer, List<String>> reverse = new HashMap<>();
+        int weightedAvg = sortByOccurrence(multiWord, reverse);
 
         printResults(type, avg, reverse);
     }
@@ -173,7 +187,7 @@ public class NLPHelper {
                     header += " ";
                 }
                 if (key > avg) {
-                    if (type.equalsIgnoreCase("person") && Pattern.compile("\\d").matcher(val).find()) {
+                    if (type.equalsIgnoreCase(PERSON) && Pattern.compile("\\d").matcher(val).find()) {
                     } else {
                         System.out.println(header + key + " | " + val);
                     }
@@ -190,19 +204,21 @@ public class NLPHelper {
      * @param multiWord
      * @return
      */
-    private Map<Integer, List<String>> sortByOccurrence(Map<String, TermWrapper> multiWord) {
-        Map<Integer, List<String>> reverse = new HashMap<>();
+    private int sortByOccurrence(Map<String, TermWrapper> multiWord, Map<Integer, List<String>> reverse) {
+        
         // reverse the hash by count
+        int total = 0;
         for (Entry<String, TermWrapper> entry : multiWord.entrySet()) {
             TermWrapper value = entry.getValue();
             String key = entry.getKey();
             Integer weightedOccurrence = value.getWeightedOccurrence();
 
             List<String> results = reverse.getOrDefault(weightedOccurrence, new ArrayList<String>());
+            total += weightedOccurrence;
             results.add(key);
             reverse.put(weightedOccurrence, results);
         }
-        return reverse;
+        return total / multiWord.size();
     }
 
     /**
@@ -226,7 +242,7 @@ public class NLPHelper {
             String init = "";
             String init2 = "";
             String init3 = "";
-            if (type.equalsIgnoreCase("person")) {
+            if (type.equalsIgnoreCase(PERSON)) {
                 // -------------------------- 1 -- 2 ------- 3 -------- 4
                 Pattern p = Pattern.compile("(\\w)(\\w*)\\.?\\s(\\w\\.?)\\s([\\w]+)");
                 Matcher matcher = p.matcher(cl);
@@ -278,7 +294,7 @@ public class NLPHelper {
                 letterCount++;
             }
         }
-        return (int) (((float) letterCount / (float) words.length) * 100);
+        return toPercent(letterCount, words.length);
     }
 
     /**
@@ -301,6 +317,10 @@ public class NLPHelper {
             }
         }
         // System.out.println("total: "+ totalCount + " num:" + numCount);
+        return toPercent(numCount, totalCount);
+    }
+
+    private static int toPercent(int numCount, int totalCount) {
         return (int) (((float) numCount / (float) totalCount) * 100);
     }
 
@@ -333,7 +353,7 @@ public class NLPHelper {
                 letterCount++;
             }
         }
-        return (int) (((float) letterCount / (float) words.length) * 100);
+        return toPercent(letterCount,words.length);
     }
 
     /**
