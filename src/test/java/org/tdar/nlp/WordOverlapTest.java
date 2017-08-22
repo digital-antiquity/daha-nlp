@@ -21,6 +21,12 @@ public class WordOverlapTest {
         assertTrue(analyze.keySet().size() == 1);
     }
     
-    
+    @Test
+    public void test2() {
+        HashSet<String> set = new HashSet<>(Arrays.asList("William" , "William A. Longacre"," William A."," Linda Williams"," William W."," William Doelle"," William Scarlett"," William S. Fulton"," William Boyce Thompson Expedition"));
+        WordOverlapAnalyzer analyer = new WordOverlapAnalyzer(set);
+        Map<String, List<String>> analyze = analyer.analyze(set);
+        System.out.println(analyze);
+    }
 
 }

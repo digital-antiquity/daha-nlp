@@ -3,15 +3,10 @@ package org.tdar.nlp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
@@ -102,7 +97,6 @@ public class NLPHelper {
 
     public void printInOccurrenceOrder() {
         int avg = 0;
-        Map<String, TermWrapper> singles = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         Map<String, TermWrapper> multiWord = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
         // split into cleaned single and multi-word phrase
@@ -112,13 +106,8 @@ public class NLPHelper {
             key = cleanString(key);
             avg += value.getOccur();
             int numSpaces = StringUtils.countMatches(key, " ");
-            if (numSpaces > 0) {
-                // Skip lots of words
-                if (numSpaces < SKIP_PHRASES_LONGER_THAN) {
-                    multiWord.put(key, value);
-                }
-            } else {
-                singles.put(key, value);
+            if (numSpaces < SKIP_PHRASES_LONGER_THAN) {
+                multiWord.put(key, value);
             }
         }
         if (ocur.size() > 0) {
@@ -126,53 +115,27 @@ public class NLPHelper {
         }
 
         WordOverlapAnalyzer multi = new WordOverlapAnalyzer(multiWord.keySet());
-        Map<String, List<String>> analyze = multi.analyze(singles.keySet());
+        Map<String, List<String>> analyze = multi.analyze(multiWord.keySet());
         for (Entry<String,List<String>> entry : analyze.entrySet()) {
             TermWrapper keyWrapper = multiWord.get(entry.getKey());
             for (String val : entry.getValue()) {
-                TermWrapper vw = singles.get(val);
+                TermWrapper vw = multiWord.get(val);
                 vw.setTerm(val);
                 keyWrapper.combine(vw);
-                singles.remove(val);
+                multiWord.remove(val);
             }
         }
-        stripOverlappingSingleMultiWord(type, singles, multiWord);
-
-        multiWord.putAll(singles);
-
-        combineMultiWordOverlap(type, multiWord);
+        
+        if (PERSON.equals(type)) {
+            PersonalNameOverwrapAnalyzer overlap = new PersonalNameOverwrapAnalyzer();
+            overlap.combineMultiWordOverlap(multiWord);
+        }
 
         
         Map<Integer, List<String>> reverse = new HashMap<>();
         int weightedAvg = sortByOccurrence(multiWord, reverse);
 
         printResults(type, avg, reverse);
-    }
-
-    private Set<String> stripOverlappingSingleMultiWord(String type, Map<String, TermWrapper> singles, Map<String, TermWrapper> multiWord) {
-        Set<String> toRemove = new HashSet<String>();
-        // only combine multi-> single words if we're dealing with people
-        if (type.equalsIgnoreCase("Person")) {
-            // for each single word phrase, try and fit it into a multi-word and combine
-            Iterator<Entry<String, TermWrapper>> iterator = singles.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Entry<String, TermWrapper> entry = iterator.next();
-                String txt = entry.getKey();
-                for (String key : multiWord.keySet()) {
-                    // note this will inappropriately boost one last name match over another, eg. Adam Smith, and Steve Smith, with Smith
-                    String parent = stripClean(key);
-                    if (parent.toLowerCase().endsWith(" " + txt.toLowerCase())) {
-                        toRemove.add(txt);
-                        entry.getValue().setTerm(entry.getKey());
-                        multiWord.get(key).combine(entry.getValue());
-                    }
-                }
-            }
-            for (String key : toRemove) {
-                singles.remove(key);
-            }
-        }
-        return toRemove;
     }
 
     private void printResults(String type, int avg, Map<Integer, List<String>> reverse) {
@@ -221,65 +184,7 @@ public class NLPHelper {
         return total / multiWord.size();
     }
 
-    /**
-     * Deal with cases like A. Brin A Brin and Adam Brin, and try and combine overlapping names, it's not exact and has issues like Smith, A. Smith, and B.
-     * Smith...
-     * 
-     * @param type
-     * @param multiWord
-     */
-    private void combineMultiWordOverlap(String type, Map<String, TermWrapper> multiWord) {
-        List<String> keySet = new ArrayList<String>(multiWord.keySet());
-        Set<String> set2 = new TreeSet<>(new StringLengthComparator());
-        set2.addAll(keySet);
-        Set<String> toRemove = new HashSet<>();
-
-        /**
-         * Match Shortened Versions of Names
-         */
-        for (String key : keySet) {
-            String cl = stripClean(key).toLowerCase();
-            String init = "";
-            String init2 = "";
-            String init3 = "";
-            if (type.equalsIgnoreCase(PERSON)) {
-                // -------------------------- 1 -- 2 ------- 3 -------- 4
-                Pattern p = Pattern.compile("(\\w)(\\w*)\\.?\\s(\\w\\.?)\\s([\\w]+)");
-                Matcher matcher = p.matcher(cl);
-                if (matcher.matches()) {
-                    // First Last (w/o initial)
-                    init = matcher.group(1) + matcher.group(2) + " " + matcher.group(4);
-                    // F. Last
-                    init2 = matcher.group(1) + " " + matcher.group(4);
-                }
-
-                // -------------------------- 1 -- 2 ------- 3
-                Pattern p2 = Pattern.compile("(\\w)(\\w*)\\.?\\s(\\w+)");
-                Matcher matcher2 = p2.matcher(cl);
-                if (matcher2.matches()) {
-                    // F. Last
-                    init3 = matcher2.group(1) + " " + matcher2.group(3);
-                }
-            }
-            for (String keyi : set2) {
-                if (keyi.equals(key) || toRemove.contains(keyi)) {
-                    continue;
-                }
-                String clean = stripClean(keyi).toLowerCase();
-                if (clean.equalsIgnoreCase(init) || clean.equalsIgnoreCase(init2) || clean.equalsIgnoreCase(init3)) {
-                    toRemove.add(keyi);
-                    TermWrapper termWrapper = multiWord.get(keyi);
-                    termWrapper.setTerm(keyi);
-                    multiWord.get(key).combine(termWrapper);
-                }
-            }
-        }
-
-        for (String key : toRemove) {
-            multiWord.remove(key);
-        }
-    }
-
+  
     /**
      * What % of the term is made up of numbers
      * 
@@ -356,16 +261,6 @@ public class NLPHelper {
         return toPercent(letterCount,words.length);
     }
 
-    /**
-     * Remove punctuation and force to lowercase
-     * 
-     * @param key
-     * @return
-     */
-    private String stripClean(String key) {
-        String mat = key.toLowerCase().replaceAll("[^\\w\\s]", "");
-        return mat;
-    }
 
     /**
      * Cleans text: Strips newlines and tags
