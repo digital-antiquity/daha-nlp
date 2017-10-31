@@ -11,6 +11,14 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 
+/**
+ * Notes: 
+ *  * can we identify names in citations eg (Kent 2103) and organize or weight them differently?
+ *  * should we weight nested names for instititutions?
+ *  * should we weight occurrence when handling nested people?   
+ * @author abrin
+ *
+ */
 public class NLPHelper {
     private static final String PERSON = "person";
     public static final int SKIP_PHRASES_LONGER_THAN = 5;
@@ -25,6 +33,9 @@ public class NLPHelper {
         this.type = type;
     }
 
+    
+    
+    
     private boolean stringValid(String key) {
         if ((StringUtils.contains(key, "=\"") || StringUtils.contains(key, "=\'")) && REMOVE_HTML_TERMS) {
             return false;
@@ -181,7 +192,10 @@ public class NLPHelper {
             results.add(key);
             reverse.put(weightedOccurrence, results);
         }
-        return total / multiWord.size();
+        if (multiWord.size() > 0) {
+            return total / multiWord.size();
+        }
+        return 0;
     }
 
   

@@ -105,7 +105,7 @@ public class StandAloneAnnie {
         // annieController = (ConditionalSerialAnalyserController) Factory.createResource("gate.creole.ConditionalSerialAnalyserController",
         // Factory.newFeatureMap(), Factory.newFeatureMap(),"ANNIE");
         FeatureMap params = Factory.newFeatureMap();
-        params.put("listsURL", "file:///Users/abrin/Documents/workspace/nlp-playground/nlp/gate/tdar/lists.def");
+        params.put("listsURL", "file:///Users/abrin/Dropbox (ASU)/nlp-playground/nlp/gate/tdar/lists.def");
         try {
         mainGazetteer = (LanguageAnalyser) Factory.createResource("gate.creole.gazetteer.DefaultGazetteer", params);
         annieController.add((ProcessingResource) mainGazetteer.init());
@@ -232,11 +232,11 @@ public class StandAloneAnnie {
             logger.debug("Repositioning: " + info);
         }
 
-        for (Entry<String,Integer> ent : types.get("Organization").entrySet()) {
-            System.out.println(ent.getValue() + "\t" + ent.getKey());
-        }
         
         for (String key : types.keySet()) {
+            for (Entry<String,Integer> ent : types.get(key).entrySet()) {
+                System.out.println(key + "\t" + ent.getValue() + "\t" + ent.getKey());
+            }
 //            NLPHelper.printInOccurrenceOrder(key, types.get(key));
         }
 
