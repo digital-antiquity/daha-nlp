@@ -67,6 +67,8 @@ public class App
             TokenNameFinderModel modelcite = new TokenNameFinderModel(new FileInputStream("en-ner-citation.bin"));
             TokenNameFinderModel model = new TokenNameFinderModel(new FileInputStream("en-ner-person.bin"));
             TokenNameFinderModel modelp = new TokenNameFinderModel(new FileInputStream("en-ner-customperson.bin"));
+            TokenNameFinderModel modelo = new TokenNameFinderModel(new FileInputStream("en-ner-customorganization.bin"));
+            TokenNameFinderModel modell = new TokenNameFinderModel(new FileInputStream("en-ner-customlocation.bin"));
             TokenNameFinderModel model2 = new TokenNameFinderModel(new FileInputStream("en-ner-organization.bin"));
             TokenNameFinderModel model3 = new TokenNameFinderModel(new FileInputStream("en-ner-location.bin"));
             
@@ -91,6 +93,8 @@ public class App
                 String tokens[] = tokenizer.tokenize(sentence);
                 processResults(modelcite, tokens, pos, cite);
                 processResults(modelp, tokens, pos, person);
+                processResults(modell, tokens, pos, location);
+                processResults(modelo, tokens, pos, institution);
                 processResults(model, tokens, pos, person);
                 processResults(model2, tokens, pos, institution);
                 processResults(model3, tokens, pos, location);

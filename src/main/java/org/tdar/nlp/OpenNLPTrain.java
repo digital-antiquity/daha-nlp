@@ -36,6 +36,8 @@ public class OpenNLPTrain {
     public static void main(String[] args) throws IOException {
         train("en-ner-citation.bin", "citation", "cite.train");
         train("en-ner-customperson.bin", "person", "person.train");
+        train("en-ner-customorganization.bin", "organization", "organization.train");
+        train("en-ner-customlocation.bin", "location", "location.train");
     }
 
     private static void train(String modelFile, String part, String trainFile) throws IOException, FileNotFoundException {
