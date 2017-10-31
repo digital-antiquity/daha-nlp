@@ -13,9 +13,6 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.bericotech.clavin.GeoParser;
-import com.bericotech.clavin.GeoParserFactory;
-import com.bericotech.clavin.resolver.ResolvedLocation;
 
 import opennlp.tools.doccat.DoccatFactory;
 import opennlp.tools.doccat.FeatureGenerator;
@@ -114,19 +111,6 @@ public class App
             //
 
             
-            if (false) {
-                GeoParser parser = GeoParserFactory.getDefault("./IndexDirectory");
-
-                // Unstructured text file about Somalia to be geoparsed
-
-                // Parse location names in the text into geographic entities
-                List<ResolvedLocation> resolvedLocations = parser.parse(input);
-
-                // Display the ResolvedLocations found for the location names
-                for (ResolvedLocation resolvedLocation : resolvedLocations) {
-                    System.out.println(resolvedLocation);
-                }
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }

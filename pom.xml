@@ -15,18 +15,6 @@
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>3.8.0</version>
-		</dependency>
-        
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>3.8.0</version>
-			<classifier>models</classifier>
-		</dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.opennlp/opennlp-tools -->
         <dependency>
             <groupId>org.apache.opennlp</groupId>
@@ -42,38 +30,34 @@
         </dependency>
 
 
-<!-- https://mvnrepository.com/artifact/org.apache.tika/tika-core -->
-<dependency>
-    <groupId>org.apache.tika</groupId>
-    <artifactId>tika-core</artifactId>
-    <version>1.5</version>
-</dependency>
-
-<!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers -->
-<dependency>
-    <groupId>org.apache.tika</groupId>
-    <artifactId>tika-parsers</artifactId>
-    <version>1.5</version>
-</dependency>
-
-        
-		<!-- https://opennlp.apache.org -->
-		<dependency>
-			<groupId>com.bericotech</groupId>
-			<artifactId>clavin</artifactId>
-			<version>2.1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>uk.ac.gate</groupId>
-			<artifactId>gate-core</artifactId>
-			<version>8.4.1</version>
-		</dependency>
 		<dependency>
 			<!-- http://mallet.cs.umass.edu/import.php -->
 			<groupId>cc.mallet</groupId>
 			<artifactId>mallet</artifactId>
 			<version>2.0.8</version>
 		</dependency>
+                    <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>2.6</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.5</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>3.2.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.6</version>
+                <!-- LICENSE: APACHE 2.0 -->
+            </dependency>
+        
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
