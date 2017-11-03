@@ -71,7 +71,7 @@ public class TermWrapper {
     public Integer getWeightedOccurrence() {
         int value = occur;
 //        value += 10 * StringUtils.countMatches(term, " ");
-        if (pos < 2) {
+        if (pos < 10) {
             return value + 100;
         }
         return value;

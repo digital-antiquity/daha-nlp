@@ -12,30 +12,36 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Notes: 
- *  * can we identify names in citations eg (Kent 2103) and organize or weight them differently?
- *  * should we weight nested names for instititutions?
- *  * should we weight occurrence when handling nested people?   
+ * Notes:
+ * * can we identify names in citations eg (Kent 2103) and organize or weight them differently?
+ * * should we weight nested names for instititutions?
+ * * should we weight occurrence when handling nested people?
+ * 
  * @author abrin
  *
  */
 public class NLPHelper {
+    private static final String PUNCTUATION = "\\.;\\(\\)\\[\\]\\?\\-\\_\\,\\^\\&°£»\\|\\*\\/’\"\'«";
     private static final String PERSON = "person";
     public static final int SKIP_PHRASES_LONGER_THAN = 5;
-    public static String[] stopWords = { "investigation", "catalog", " and ", " or ", "appendix", "submitted", "expection" };
-    public static final String NUMERIC_PUNCTUATION = "^[\\d\\s/\\.;\\(\\)\\[\\]\\?\\-\\_\\,]+$";
+    public static String[] stopWords = { "investigation", "catalog", "and", "or", "appendix", "submitted", "expection", "feature", "figure", "below", "collection", "indeterminate","unknown", "not", "comments", "available", "count", "miles", "feet","acres","inches", "photo","zone" };
+    private List<String> boostValues = new ArrayList<>();
+    public static final String NUMERIC_PUNCTUATION = "^[\\d\\s/" + PUNCTUATION + "]+$";
     public static final int MIN_TERM_LENGTH = 3;
     public static final boolean REMOVE_HTML_TERMS = true;
     private Map<String, TermWrapper> ocur = new HashMap<>();
     private String type;
+    private String regexBoost = null;
+    private int minPercentOneLetter = 50;
+    private int minPercentNumberWords = 50;
+    private int minPercentNumbers = 50;
+    private int maxPercentNonAscii = 50;
+    private int minTermLength = MIN_TERM_LENGTH;
 
     public NLPHelper(String type) {
         this.type = type;
     }
 
-    
-    
-    
     private boolean stringValid(String key) {
         if ((StringUtils.contains(key, "=\"") || StringUtils.contains(key, "=\'")) && REMOVE_HTML_TERMS) {
             return false;
@@ -45,34 +51,50 @@ public class NLPHelper {
             return false;
         }
 
-        if (containsStopWord(key) && PERSON.equals(type)) {
+        if (containsStopWord(key)) {
             return false;
         }
         int percentOneLetter = percentOneLetter(key);
-        if (percentOneLetter > 74 && PERSON.equals(type)) {
+        if (percentOneLetter > 74) {
             return false;
         }
 
-        if (percentOneLetter > 50) {
+        if (percentOneLetter > getMinPercentOneLetter()) {
             return false;
         }
 
-        if (percentNumberWords(key) > 50) {
+        if (percentNumberWords(key) > getMinPercentNumberWords()) {
             return false;
         }
 
-        if (percentNumericCharacters(key) > 50) {
+        if (percentNumericCharacters(key) > getMinPercentNumbers()) {
+            return false;
+        }
+
+        if (percentNonAsciiCharacters(key) < getMaxPercentNonAscii()) {
             return false;
         }
 
         if (unmatchedChars(key)) {
             return false;
         }
-        
-        if (StringUtils.length(key) < MIN_TERM_LENGTH) {
+
+        if (StringUtils.length(key) < getMinTermLength()) {
             return false;
         }
         return true;
+    }
+
+    private int percentNonAsciiCharacters(String key) {
+        int numOk = 0;
+        int total = key.length();
+        for (char c : key.toCharArray()) {
+            int ascii = (int) c;
+            if (ascii > 64 && ascii < 91 || ascii > 96 && ascii < 123 || ascii == 32) {
+                numOk++;
+            }
+        }
+        return toPercent(numOk, total);
     }
 
     public static boolean unmatchedChars(String key) {
@@ -89,7 +111,7 @@ public class NLPHelper {
         if (openB != closedB) {
             return true;
         }
-        
+
         if (quote % 2 != 0) {
             return true;
         }
@@ -119,6 +141,8 @@ public class NLPHelper {
             int numSpaces = StringUtils.countMatches(key, " ");
             if (numSpaces < SKIP_PHRASES_LONGER_THAN) {
                 multiWord.put(key, value);
+            } else {
+                // System.out.println("\t--" + key);
             }
         }
         if (ocur.size() > 0) {
@@ -127,22 +151,22 @@ public class NLPHelper {
 
         WordOverlapAnalyzer multi = new WordOverlapAnalyzer(multiWord.keySet());
         Map<String, List<String>> analyze = multi.analyze(multiWord.keySet());
-        for (Entry<String,List<String>> entry : analyze.entrySet()) {
+        for (Entry<String, List<String>> entry : analyze.entrySet()) {
             TermWrapper keyWrapper = multiWord.get(entry.getKey());
             for (String val : entry.getValue()) {
                 TermWrapper vw = multiWord.get(val);
                 vw.setTerm(val);
                 keyWrapper.combine(vw);
                 multiWord.remove(val);
+                // System.out.println("\t--" + val + " --> " + keyWrapper.getTerm());
             }
         }
-        
+
         if (PERSON.equals(type)) {
             PersonalNameOverwrapAnalyzer overlap = new PersonalNameOverwrapAnalyzer();
             overlap.combineMultiWordOverlap(multiWord);
         }
 
-        
         Map<Integer, List<String>> reverse = new HashMap<>();
         int weightedAvg = sortByOccurrence(multiWord, reverse);
 
@@ -179,26 +203,35 @@ public class NLPHelper {
      * @return
      */
     private int sortByOccurrence(Map<String, TermWrapper> multiWord, Map<Integer, List<String>> reverse) {
-        
+
         // reverse the hash by count
         int total = 0;
         for (Entry<String, TermWrapper> entry : multiWord.entrySet()) {
             TermWrapper value = entry.getValue();
             String key = entry.getKey();
             Integer weightedOccurrence = value.getWeightedOccurrence();
-
+            for (String boost : boostValues) {
+                if (StringUtils.containsIgnoreCase(key, boost)) {
+                    weightedOccurrence += 200;
+                }
+                if (StringUtils.equalsIgnoreCase(key, boost)) {
+                    weightedOccurrence -=1000;
+                }
+            }
+            if (regexBoost != null && key.matches(regexBoost)) {
+                weightedOccurrence += 200;
+            }
             List<String> results = reverse.getOrDefault(weightedOccurrence, new ArrayList<String>());
             total += weightedOccurrence;
             results.add(key);
             reverse.put(weightedOccurrence, results);
         }
         if (multiWord.size() > 0) {
-            return total / multiWord.size();
+            return toPercent(total, multiWord.size());
         }
         return 0;
     }
 
-  
     /**
      * What % of the term is made up of numbers
      * 
@@ -250,10 +283,9 @@ public class NLPHelper {
      * @return
      */
     public static boolean containsStopWord(String val) {
-        for (String term : stopWords) {
-            if (StringUtils.containsIgnoreCase(val, term)) {
+        String match = ".*\\b("+StringUtils.join(stopWords,"|")+")\\b.*".toLowerCase();
+        if (val.matches(match)) {
                 return true;
-            }
         }
         return false;
     }
@@ -272,9 +304,8 @@ public class NLPHelper {
                 letterCount++;
             }
         }
-        return toPercent(letterCount,words.length);
+        return toPercent(letterCount, words.length);
     }
-
 
     /**
      * Cleans text: Strips newlines and tags
@@ -292,11 +323,69 @@ public class NLPHelper {
         if (key.indexOf(">") > -1) {
             key = key.substring(0, key.indexOf(">"));
         }
+        key = key.trim().replaceAll("^[" + PUNCTUATION + "]\\s", "");
+        key = key.trim().replaceAll("\\s[" + PUNCTUATION + "]$", "");
         return key.trim();
     }
 
     public String getType() {
         return type;
+    }
+
+    public int getMinTermLength() {
+        return minTermLength;
+    }
+
+    public void setMinTermLength(int minTermLength) {
+        this.minTermLength = minTermLength;
+    }
+
+    public int getMaxPercentNonAscii() {
+        return maxPercentNonAscii;
+    }
+
+    public void setMaxPercentNonAscii(int maxPercentNonAscii) {
+        this.maxPercentNonAscii = maxPercentNonAscii;
+    }
+
+    public int getMinPercentNumbers() {
+        return minPercentNumbers;
+    }
+
+    public void setMinPercentNumbers(int minPercentNumbers) {
+        this.minPercentNumbers = minPercentNumbers;
+    }
+
+    public int getMinPercentNumberWords() {
+        return minPercentNumberWords;
+    }
+
+    public void setMinPercentNumberWords(int minPercentNumberWords) {
+        this.minPercentNumberWords = minPercentNumberWords;
+    }
+
+    public int getMinPercentOneLetter() {
+        return minPercentOneLetter;
+    }
+
+    public void setMinPercentOneLetter(int minPercentOneLetter) {
+        this.minPercentOneLetter = minPercentOneLetter;
+    }
+
+    public List<String> getBoostValues() {
+        return boostValues;
+    }
+
+    public void setBoostValues(List<String> boostValues) {
+        this.boostValues = boostValues;
+    }
+
+    public String getRegexBoost() {
+        return regexBoost;
+    }
+
+    public void setRegexBoost(String regexBoost) {
+        this.regexBoost = regexBoost;
     }
 
 }
