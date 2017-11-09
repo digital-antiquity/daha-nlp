@@ -13,7 +13,7 @@ public class TermWrapper {
     private List<TermWrapper> alternates = new ArrayList<>();
     private int pos;
     private int occur = 1;
-
+    private List<Double> probability = new ArrayList<>();
     public String getTerm() {
         return term;
     }
@@ -56,8 +56,9 @@ public class TermWrapper {
         this.alternates = alternates;
     }
 
-    public TermWrapper increment() {
+    public TermWrapper increment(double probability) {
         occur++;
+        this.probability.add(probability);
         return this;
     }
 

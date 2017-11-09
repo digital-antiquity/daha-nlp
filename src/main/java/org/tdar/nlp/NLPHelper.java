@@ -10,6 +10,8 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Notes:
@@ -21,10 +23,13 @@ import org.apache.commons.lang.StringUtils;
  *
  */
 public class NLPHelper {
+    
+    private final Logger log = LogManager.getLogger(getClass());
+
     private static final String PUNCTUATION = "\\.;\\(\\)\\[\\]\\?\\-\\_\\,\\^\\&°£»\\|\\*\\/’\"\'«";
     private static final String PERSON = "person";
     public static final int SKIP_PHRASES_LONGER_THAN = 5;
-    public static String[] stopWords = { "investigation", "catalog", "and", "or", "appendix", "submitted", "expection", "feature", "figure", "below", "collection", "indeterminate","unknown", "not", "comments", "available", "count", "miles", "feet","acres","inches", "photo","zone" ,"Miscellaneous"};
+    public static String[] stopWords = { "investigation", "catalog", "and", "or", "appendix", "submitted", "expection", "feature","figures", "table","page", "figure", "below", "collection", "indeterminate","unknown", "not", "comments", "available", "count", "miles", "feet","acres","inches", "photo","zone" ,"Miscellaneous"};
     private List<String> boostValues = new ArrayList<>();
     private List<String> skipPreviousTerms = new ArrayList<>();
     public static final String NUMERIC_PUNCTUATION = "^[\\d\\s/" + PUNCTUATION + "]+$";
@@ -120,13 +125,13 @@ public class NLPHelper {
         return false;
     }
 
-    public void appendOcurrenceMap(String name, int pos) {
+    public void appendOcurrenceMap(String name, int pos, double probability) {
         String key = cleanString(name);
 
         if (!stringValid(key)) {
             return;
         }
-        ocur.put(key, ocur.getOrDefault(key, new TermWrapper()).increment());
+        ocur.put(key, ocur.getOrDefault(key, new TermWrapper()).increment(probability));
     }
 
     public void printInOccurrenceOrder() {
@@ -143,7 +148,7 @@ public class NLPHelper {
             if (numSpaces < SKIP_PHRASES_LONGER_THAN) {
                 multiWord.put(key, value);
             } else {
-                // System.out.println("\t--" + key);
+                // log.debug("\t--" + key);
             }
         }
         if (ocur.size() > 0) {
@@ -159,7 +164,7 @@ public class NLPHelper {
 //                vw.setTerm(val);
 //                keyWrapper.combine(vw);
 //                multiWord.remove(val);
-//                // System.out.println("\t--" + val + " --> " + keyWrapper.getTerm());
+//                // log.debug("\t--" + val + " --> " + keyWrapper.getTerm());
 //            }
 //        }
 
@@ -188,10 +193,10 @@ public class NLPHelper {
                 if (key > avg) {
                     if (type.equalsIgnoreCase(PERSON) && Pattern.compile("\\d").matcher(val).find()) {
                     } else {
-                        System.out.println(header + key + " | " + val);
+                        log.debug(header + key + " | " + val);
                     }
                 } else {
-                    // System.out.println(header + "| " + val);
+                    // log.debug(header + "| " + val);
                 }
             }
         }
@@ -269,7 +274,7 @@ public class NLPHelper {
                 totalCount++;
             }
         }
-        // System.out.println("total: "+ totalCount + " num:" + numCount);
+        // log.debug("total: "+ totalCount + " num:" + numCount);
         return toPercent(numCount, totalCount);
     }
 

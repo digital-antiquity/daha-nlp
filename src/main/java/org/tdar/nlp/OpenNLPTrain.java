@@ -41,7 +41,7 @@ public class OpenNLPTrain {
     }
 
     private static void train(String modelFile, String part, String trainFile) throws IOException, FileNotFoundException {
-        InputStreamFactory isf = new InputStreamFactoryImplementation(trainFile);
+        InputStreamFactory isf = new InputStreamFactoryImplementation("training/" + trainFile);
 
         Charset charset = Charset.forName("UTF-8");
         ObjectStream<String> lineStream = new PlainTextByLineStream(isf, charset);
@@ -61,7 +61,7 @@ public class OpenNLPTrain {
         BufferedOutputStream modelOut = null;
 
         try {
-            modelOut = new BufferedOutputStream(new FileOutputStream(modelFile));
+            modelOut = new BufferedOutputStream(new FileOutputStream("models/"+ modelFile));
             model.serialize(modelOut);
         } finally {
             if (modelOut != null)
