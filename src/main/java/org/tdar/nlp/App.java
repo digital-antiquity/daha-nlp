@@ -22,7 +22,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.jena.sparql.function.library.max;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.io.MemoryUsageSetting;
@@ -63,8 +62,8 @@ public class App {
                 "Omar Turney then recommended him for a job with J.A. Mewkes at Elden Pueblo in Flagstaff, but he apparently was not hired, though his brother Paul was.");
 
         String filename = args[0];
-        filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
-        // filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
+         filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
+//        filename = "/Users/abrin/Downloads/ABDAHA-2/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
         if (filename != null) {
             File file = new File(filename);
 
@@ -149,27 +148,37 @@ public class App {
         location.setBoostValues(Arrays.asList("valley", "mountain", "state", "country", "county", "city", "town", "base",
                 "hill", "ranch"));
         int pos = 0;
+        int page = 1;
+        int total = 0;
         Map<String, Integer> siteCodes = new HashMap<>();
         for (String sentence : sentenceDetector.sentDetect(input)) {
+            log.trace(sentence);
+            if (sentence.contains(END_PAGE)) {
+//                log.debug(" ::    " + sentence);
+                log.debug("::: Page:" + page + " : totalTokens: " + total);
+                sentence = sentence.replace(END_PAGE, "");
+                total = 0;
+                page++;
+            }
             Tokenizer tokenizer = new TokenizerME(tModel);
             if (includeSiteCode) {
                 extractSiteCodes(siteCodes, sentence);
             }
             String tokens[] = tokenizer.tokenize(sentence);
             if (includePerson) {
-                processResults(model, tokens, pos, person);
+                total += processResults(model, tokens, pos, person);
                 processResults(modelp, tokens, pos, person);
             }
             if (includeCitation) {
-                processResults(modelcite, tokens, pos, cite);
+                total += processResults(modelcite, tokens, pos, cite);
             }
             if (includeInstitution) {
-                processResults(modelo, tokens, pos, institution);
-                processResults(model2, tokens, pos, institution);
+                total += processResults(modelo, tokens, pos, institution);
+                total += processResults(model2, tokens, pos, institution);
             }
             if (includeLocation) {
-                processResults(model3, tokens, pos, location);
-                processResults(modell, tokens, pos, location);
+                total += processResults(model3, tokens, pos, location);
+                total += processResults(modell, tokens, pos, location);
             }
             pos++;
             // log.debug(pos);
@@ -248,7 +257,7 @@ public class App {
         return dir;
     }
 
-    private void processResults(TokenNameFinderModel model3, String[] tokens, int pos, NLPHelper helper) {
+    private int processResults(TokenNameFinderModel model3, String[] tokens, int pos, NLPHelper helper) {
         // https://opennlp.apache.org/documentation/1.5.3/manual/opennlp.html
         NameFinderME nameFinder = new NameFinderME(model3);
 
@@ -256,7 +265,9 @@ public class App {
         // EMBED ONE INSIDE THE OTHER
         Span[] names = nameFinder.find(tokens);
         String[] matches = Span.spansToStrings(names, tokens);
+        int total = 0;
         for (int i = 0; i < matches.length; i++) {
+            boolean valid = false;
             Span span = names[i];
             String name = matches[i];
             String prev = "";
@@ -270,10 +281,15 @@ public class App {
                 }
             }
             if (span.getProb() > getMinProbability()) {
-                helper.appendOcurrenceMap(name, pos, span.getProb());
+                valid = helper.appendOcurrenceMap(name, pos, span.getProb());
+            }
+
+            if (valid) {
+                total++;
             }
         }
         nameFinder.clearAdaptiveData();
+        return total;
     }
 
     public double getMinProbability() {

@@ -125,13 +125,14 @@ public class NLPHelper {
         return false;
     }
 
-    public void appendOcurrenceMap(String name, int pos, double probability) {
+    public boolean appendOcurrenceMap(String name, int pos, double probability) {
         String key = cleanString(name);
 
         if (!stringValid(key)) {
-            return;
+            return false;
         }
         ocur.put(key, ocur.getOrDefault(key, new TermWrapper()).increment(probability));
+        return true;
     }
 
     public void printInOccurrenceOrder() {
