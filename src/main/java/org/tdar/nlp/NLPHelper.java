@@ -24,8 +24,9 @@ public class NLPHelper {
     private static final String PUNCTUATION = "\\.;\\(\\)\\[\\]\\?\\-\\_\\,\\^\\&°£»\\|\\*\\/’\"\'«";
     private static final String PERSON = "person";
     public static final int SKIP_PHRASES_LONGER_THAN = 5;
-    public static String[] stopWords = { "investigation", "catalog", "and", "or", "appendix", "submitted", "expection", "feature", "figure", "below", "collection", "indeterminate","unknown", "not", "comments", "available", "count", "miles", "feet","acres","inches", "photo","zone" };
+    public static String[] stopWords = { "investigation", "catalog", "and", "or", "appendix", "submitted", "expection", "feature", "figure", "below", "collection", "indeterminate","unknown", "not", "comments", "available", "count", "miles", "feet","acres","inches", "photo","zone" ,"Miscellaneous"};
     private List<String> boostValues = new ArrayList<>();
+    private List<String> skipPreviousTerms = new ArrayList<>();
     public static final String NUMERIC_PUNCTUATION = "^[\\d\\s/" + PUNCTUATION + "]+$";
     public static final int MIN_TERM_LENGTH = 3;
     public static final boolean REMOVE_HTML_TERMS = true;
@@ -149,23 +150,23 @@ public class NLPHelper {
             avg = avg / ocur.size();
         }
 
-        WordOverlapAnalyzer multi = new WordOverlapAnalyzer(multiWord.keySet());
-        Map<String, List<String>> analyze = multi.analyze(multiWord.keySet());
-        for (Entry<String, List<String>> entry : analyze.entrySet()) {
-            TermWrapper keyWrapper = multiWord.get(entry.getKey());
-            for (String val : entry.getValue()) {
-                TermWrapper vw = multiWord.get(val);
-                vw.setTerm(val);
-                keyWrapper.combine(vw);
-                multiWord.remove(val);
-                // System.out.println("\t--" + val + " --> " + keyWrapper.getTerm());
-            }
-        }
+//        WordOverlapAnalyzer multi = new WordOverlapAnalyzer(multiWord.keySet());
+//        Map<String, List<String>> analyze = multi.analyze(multiWord.keySet());
+//        for (Entry<String, List<String>> entry : analyze.entrySet()) {
+//            TermWrapper keyWrapper = multiWord.get(entry.getKey());
+//            for (String val : entry.getValue()) {
+//                TermWrapper vw = multiWord.get(val);
+//                vw.setTerm(val);
+//                keyWrapper.combine(vw);
+//                multiWord.remove(val);
+//                // System.out.println("\t--" + val + " --> " + keyWrapper.getTerm());
+//            }
+//        }
 
-        if (PERSON.equals(type)) {
-            PersonalNameOverwrapAnalyzer overlap = new PersonalNameOverwrapAnalyzer();
-            overlap.combineMultiWordOverlap(multiWord);
-        }
+//        if (PERSON.equals(type)) {
+//            PersonalNameOverwrapAnalyzer overlap = new PersonalNameOverwrapAnalyzer();
+//            overlap.combineMultiWordOverlap(multiWord);
+//        }
 
         Map<Integer, List<String>> reverse = new HashMap<>();
         int weightedAvg = sortByOccurrence(multiWord, reverse);
@@ -284,7 +285,7 @@ public class NLPHelper {
      */
     public static boolean containsStopWord(String val) {
         String match = ".*\\b("+StringUtils.join(stopWords,"|")+")\\b.*".toLowerCase();
-        if (val.matches(match)) {
+        if (val.toLowerCase().matches(match)) {
                 return true;
         }
         return false;
@@ -386,6 +387,14 @@ public class NLPHelper {
 
     public void setRegexBoost(String regexBoost) {
         this.regexBoost = regexBoost;
+    }
+
+    public List<String> getSkipPreviousTerms() {
+        return skipPreviousTerms;
+    }
+
+    public void setSkipPreviousTerms(List<String> skipPreviousTerms) {
+        this.skipPreviousTerms = skipPreviousTerms;
     }
 
 }
