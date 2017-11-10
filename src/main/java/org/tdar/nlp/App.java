@@ -12,11 +12,9 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -28,7 +26,6 @@ import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.tools.PDFText2HTML;
-import org.tdar.utils.SiteCodeExtractor;
 
 import opennlp.tools.doccat.DoccatFactory;
 import opennlp.tools.doccat.FeatureGenerator;
@@ -49,7 +46,7 @@ public class App {
 
     private static final String END_PAGE = "______END___PAGE______";
     private static final String START_PAGE = "______START_PAGE______";
-    private final double minProbability = .9;
+    private final double minProbability = .5;
     private boolean includeCitation = true;
     private boolean includePerson = true;
     private boolean includeInstitution = true;
@@ -62,7 +59,7 @@ public class App {
                 "Omar Turney then recommended him for a job with J.A. Mewkes at Elden Pueblo in Flagstaff, but he apparently was not hired, though his brother Paul was.");
 
         String filename = args[0];
-//         filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
+        // filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
         filename = "/Users/abrin/Downloads/ABDAHA-2/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
         if (filename != null) {
             File file = new File(filename);
@@ -115,8 +112,8 @@ public class App {
         TokenNameFinderModel modelp = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-customperson.bin")));
         TokenNameFinderModel modelo = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-customorganization.bin")));
         TokenNameFinderModel modell = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-customlocation.bin")));
-        TokenNameFinderModel model2 = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-organization.bin")));
-        TokenNameFinderModel model3 = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-location.bin")));
+        TokenNameFinderModel modelo2 = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-organization.bin")));
+        TokenNameFinderModel modell2 = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-location.bin")));
 
         FeatureGenerator[] featureGenerators = { new NGramFeatureGenerator(1, 1),
                 new NGramFeatureGenerator(2, 3) };
@@ -132,10 +129,10 @@ public class App {
         log.debug("------------------------------------------------------------------------------------------------------------");
         log.debug("    " + filename);
         log.debug("------------------------------------------------------------------------------------------------------------");
-        NLPHelper person = new NLPHelper("person");
-        NLPHelper cite = new NLPHelper("citation");
+        NLPHelper person = new NLPHelper("person", model, modelp);
+        NLPHelper cite = new NLPHelper("citation", modelcite);
         cite.setRegexBoost(".+\\d++.*");
-        NLPHelper institution = new NLPHelper("institution");
+        NLPHelper institution = new NLPHelper("institution", modelo, modelo2);
         institution.setBoostValues(
                 Arrays.asList("inc.", "co.", "university", "college", "museum", "company", "llc", "ltd", " of ", "office", "services", "group", "society"));
         person.setMinTermLength(4);
@@ -144,70 +141,51 @@ public class App {
         person.setBoostValues(Arrays.asList("dr.", "mr.", "mrs."));
         person.setMinPercentNumberWords(2);
         person.setSkipPreviousTerms(Arrays.asList("of", "in", "the"));
-        NLPHelper location = new NLPHelper("location");
+        NLPHelper location = new NLPHelper("location", modell, modell2);
         location.setBoostValues(Arrays.asList("valley", "mountain", "state", "country", "county", "city", "town", "base",
                 "hill", "ranch"));
         int pos = 0;
-        int page = 1;
+        int pageNum = 1;
+        int maxPages = 10;
         int total = 0;
-        Map<String, Integer> siteCodes = new HashMap<>();
-        Page pageDoc = new Page(page);
-        List<Page> pages = new ArrayList<>();
+        NlpDocument doc = new NlpDocument();
+        doc.getHelpers().add(person);
+        doc.getHelpers().add(cite);
+        doc.getHelpers().add(institution);
+        doc.getHelpers().add(location);
+        Page page = new Page(pageNum);
         for (String sentence : sentenceDetector.sentDetect(input)) {
             log.trace(sentence);
+            page.addSentence(sentence);
             if (sentence.contains(END_PAGE)) {
-//                log.debug(" ::    " + sentence);
-                log.debug("::: Page:" + page + " : totalTokens: " + total);
+                log.debug("::: Page:" + pageNum + " : totalTokens: " + total + " total toc:" + page.getTocRank());
                 sentence = sentence.replace(END_PAGE, "");
                 total = 0;
-                page++;
-                pages.add(pageDoc);
-                pageDoc = new Page(page);
+                pageNum++;
+                doc.addPage(page);
+                page = new Page(pageNum);
             }
             Tokenizer tokenizer = new TokenizerME(tModel);
             if (includeSiteCode) {
-                extractSiteCodes(siteCodes, sentence);
+                page.extractSiteCodes(sentence);
             }
             String tokens[] = tokenizer.tokenize(sentence);
-            if (includePerson) {
-                total += processResults(pageDoc, model, tokens, pos, person);
-                total += processResults(pageDoc, modelp, tokens, pos, person);
-            }
-            if (includeCitation) {
-                total += processResults(pageDoc, modelcite, tokens, pos, cite);
-            }
-            if (includeInstitution) {
-                total += processResults(pageDoc, modelo, tokens, pos, institution);
-                total += processResults(pageDoc, model2, tokens, pos, institution);
-            }
-            if (includeLocation) {
-                total += processResults(pageDoc, model3, tokens, pos, location);
-                total += processResults(pageDoc, modell, tokens, pos, location);
+
+            for (NLPHelper h : doc.getHelpers()) {
+                for (TokenNameFinderModel model_ : h.getModels()) {
+                    total += processResults(page, model_, tokens, pos, h);
+                }
             }
             pos++;
-            // log.debug(pos);
-        }
 
-        total = 0;
-        for (Page p : pages) {
-            total += p.getTotalReferences().get(Page.ALL);
-        }
-        int avg = total / pages.size();
-        int bib = -1;
-        for (int i = pages.size() -pages.size() / 3; i >= 0; i --) {
-            if (pages.get(i).getTotalReferences().get(Page.ALL) > avg) {
-                bib = i;
-            } else if (bib > 0) {
+            if (pageNum > maxPages) {
                 break;
             }
         }
-        log.debug("BibStart:" + bib);
-        cite.printInOccurrenceOrder();
-        person.printInOccurrenceOrder();
-        institution.printInOccurrenceOrder();
-        location.printInOccurrenceOrder();
 
-        printSiteCodes(siteCodes);
+        doc.analyze();
+        doc.printResults();
+
         // DoccatModel m = new DoccatModel(new FileInputStream(""));
         // DocumentCategorizerME myCategorizer = new DocumentCategorizerME(m);
         // double[] outcomes = myCategorizer.categorize(input);
@@ -217,40 +195,6 @@ public class App {
         //
     }
 
-    private void extractSiteCodes(Map<String, Integer> siteCodes, String sentence) {
-        for (String code : SiteCodeExtractor.extractSiteCodeTokens(sentence, false)) {
-            Integer integer = siteCodes.get(code);
-            if (integer == null) {
-                integer = 1;
-            } else {
-                integer = integer + 1;
-            }
-            siteCodes.put(code, integer);
-        }
-    }
-
-    private void printSiteCodes(Map<String, Integer> siteCodes) {
-        Map<Integer, List<String>> rev = new HashMap<>();
-        for (Entry<String, Integer> entry : siteCodes.entrySet()) {
-            List<String> key = rev.get(entry.getValue());
-            if (key == null) {
-                key = new ArrayList<>();
-            }
-            key.add(entry.getKey());
-            rev.put(entry.getValue(), key);
-        }
-
-        List<Integer> keys = new ArrayList<>(rev.keySet());
-        Collections.sort(keys, Collections.reverseOrder());
-        int maxSiteCodeNum = 10;
-        for (Integer key : keys) {
-            log.debug("site code " + key + " |" + rev.get(key));
-            maxSiteCodeNum--;
-            if (maxSiteCodeNum < 0) {
-                break;
-            }
-        }
-    }
 
     private static File downloadModels() throws MalformedURLException, IOException, FileNotFoundException {
         List<URL> urls = new ArrayList<URL>();
