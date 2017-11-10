@@ -48,7 +48,7 @@ public class NLPHelper {
         this.type = type;
     }
 
-    private boolean stringValid(String key) {
+    boolean stringValid(String key) {
         if ((StringUtils.contains(key, "=\"") || StringUtils.contains(key, "=\'")) && REMOVE_HTML_TERMS) {
             return false;
         }
@@ -125,15 +125,6 @@ public class NLPHelper {
         return false;
     }
 
-    public boolean appendOcurrenceMap(String name, int pos, double probability) {
-        String key = cleanString(name);
-
-        if (!stringValid(key)) {
-            return false;
-        }
-        ocur.put(key, ocur.getOrDefault(key, new TermWrapper()).increment(probability));
-        return true;
-    }
 
     public void printInOccurrenceOrder() {
         int avg = 0;
@@ -320,7 +311,7 @@ public class NLPHelper {
      * @param key
      * @return
      */
-    public String cleanString(String key) {
+    public static String cleanString(String key) {
         key = key.replaceAll("[\r\n]", "");
         key = key.replaceAll("\\s+", " ").trim();
         key = key.replaceAll("['’]s", "");

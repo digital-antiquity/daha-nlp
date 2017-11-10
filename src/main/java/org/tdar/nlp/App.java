@@ -62,8 +62,8 @@ public class App {
                 "Omar Turney then recommended him for a job with J.A. Mewkes at Elden Pueblo in Flagstaff, but he apparently was not hired, though his brother Paul was.");
 
         String filename = args[0];
-         filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
-//        filename = "/Users/abrin/Downloads/ABDAHA-2/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
+//         filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
+        filename = "/Users/abrin/Downloads/ABDAHA-2/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
         if (filename != null) {
             File file = new File(filename);
 
@@ -151,6 +151,8 @@ public class App {
         int page = 1;
         int total = 0;
         Map<String, Integer> siteCodes = new HashMap<>();
+        Page pageDoc = new Page(page);
+        List<Page> pages = new ArrayList<>();
         for (String sentence : sentenceDetector.sentDetect(input)) {
             log.trace(sentence);
             if (sentence.contains(END_PAGE)) {
@@ -159,6 +161,8 @@ public class App {
                 sentence = sentence.replace(END_PAGE, "");
                 total = 0;
                 page++;
+                pages.add(pageDoc);
+                pageDoc = new Page(page);
             }
             Tokenizer tokenizer = new TokenizerME(tModel);
             if (includeSiteCode) {
@@ -166,24 +170,38 @@ public class App {
             }
             String tokens[] = tokenizer.tokenize(sentence);
             if (includePerson) {
-                total += processResults(model, tokens, pos, person);
-                processResults(modelp, tokens, pos, person);
+                total += processResults(pageDoc, model, tokens, pos, person);
+                total += processResults(pageDoc, modelp, tokens, pos, person);
             }
             if (includeCitation) {
-                total += processResults(modelcite, tokens, pos, cite);
+                total += processResults(pageDoc, modelcite, tokens, pos, cite);
             }
             if (includeInstitution) {
-                total += processResults(modelo, tokens, pos, institution);
-                total += processResults(model2, tokens, pos, institution);
+                total += processResults(pageDoc, modelo, tokens, pos, institution);
+                total += processResults(pageDoc, model2, tokens, pos, institution);
             }
             if (includeLocation) {
-                total += processResults(model3, tokens, pos, location);
-                total += processResults(modell, tokens, pos, location);
+                total += processResults(pageDoc, model3, tokens, pos, location);
+                total += processResults(pageDoc, modell, tokens, pos, location);
             }
             pos++;
             // log.debug(pos);
         }
 
+        total = 0;
+        for (Page p : pages) {
+            total += p.getTotalReferences().get(Page.ALL);
+        }
+        int avg = total / pages.size();
+        int bib = -1;
+        for (int i = pages.size() -pages.size() / 3; i >= 0; i --) {
+            if (pages.get(i).getTotalReferences().get(Page.ALL) > avg) {
+                bib = i;
+            } else if (bib > 0) {
+                break;
+            }
+        }
+        log.debug("BibStart:" + bib);
         cite.printInOccurrenceOrder();
         person.printInOccurrenceOrder();
         institution.printInOccurrenceOrder();
@@ -257,7 +275,7 @@ public class App {
         return dir;
     }
 
-    private int processResults(TokenNameFinderModel model3, String[] tokens, int pos, NLPHelper helper) {
+    private int processResults(Page page, TokenNameFinderModel model3, String[] tokens, int pos, NLPHelper helper) {
         // https://opennlp.apache.org/documentation/1.5.3/manual/opennlp.html
         NameFinderME nameFinder = new NameFinderME(model3);
 
@@ -281,7 +299,7 @@ public class App {
                 }
             }
             if (span.getProb() > getMinProbability()) {
-                valid = helper.appendOcurrenceMap(name, pos, span.getProb());
+                valid = page.appendOcurrenceMap(name, pos, span.getProb(), helper);
             }
 
             if (valid) {
