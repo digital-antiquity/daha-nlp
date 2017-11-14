@@ -41,6 +41,7 @@ public class NlpDocument {
     public void generateTableOfContents() {
         int start = -1;
         int end = -1;
+        boolean seenLowEnd = false;
         int avg = totalToc / pages.size() / 3;
         for (int i = 0; i < pages.size() / 2 ; i++) {
             Page page = pages.get(i);
@@ -48,11 +49,14 @@ public class NlpDocument {
             if (start < 0 && page.getTocRank() > avg) {
                 start = i;
             }
-            if (start >= 0 && page.getTocRank() > avg) {
+            if (start >= 0 && page.getTocRank() > avg && seenLowEnd == false) {
                 end = i;
             }
+            if (end > 0 && page.getTocRank() < avg) {
+                seenLowEnd = true;
+            }
         }
-        log.debug("toc start: " + start + " toc end:" + end);
+        log.debug("toc start: " + start + " toc end:" + end + " avg:" + avg + " totalToc:" + totalToc);
 
         if (start > 0) {
             for (int i = 0; i < start; i++) {
@@ -103,21 +107,30 @@ public class NlpDocument {
     }
 
     public void analyze() {
+        body.addAll(pages);
         generateTableOfContents();
         generateBibliography();
 
     }
 
     public void printResults() {
+        printResults(getFrontmatter(), SectionType.FRONT);
+        printResults(getBody(), SectionType.BODY);
+    }
+
+    private void printResults(List<Page> _pages, SectionType type) {
+        log.debug(":::::::::::::::: " + type + " ("+ _pages.size() +") ::::::::::::::::");
         Map<String, Integer> siteCodes = new HashMap<>();
         boolean runSiteCodes = false;
         for (NLPHelper helper : helpers) {
             ResultAnalyzer result = new ResultAnalyzer(helper);
-
+            if (type == SectionType.BODY) {
+                result.setMinProbability(.9);
+            }
             if (siteCodes.isEmpty()) {
                 runSiteCodes = true;
             }
-            for (Page page : body) {
+            for (Page page : _pages) {
                 result.addPage(page);
                 if (runSiteCodes) {
                     for (Entry<String, Integer> entry : page.getSiteCodes().entrySet()) {

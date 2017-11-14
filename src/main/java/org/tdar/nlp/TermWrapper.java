@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class TermWrapper {
@@ -14,6 +13,18 @@ public class TermWrapper {
     private int pos;
     private int occur = 1;
     private List<Double> probability = new ArrayList<>();
+    
+    public Double getProbabilty() {
+        if (probability.size() < 1) {
+            return .9;
+        }
+        double d = 0;
+        for (Double prob : probability) {
+            d += prob.doubleValue();
+        }
+        return d / (double)probability.size();
+    }
+    
     public String getTerm() {
         return term;
     }

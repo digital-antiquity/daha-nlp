@@ -19,6 +19,7 @@ public class ResultAnalyzer {
     private static final String PERSON = "person";
     private final Logger log = LogManager.getLogger(getClass());
     private String regexBoost = null;
+    private Double minProbability = .5;
     private List<String> boostValues = new ArrayList<>();
 
     private Map<String, TermWrapper> ocur = new HashMap<>();
@@ -32,6 +33,9 @@ public class ResultAnalyzer {
     
     public void addPage(Page page) {
         Map<String, TermWrapper> map = page.getReferences().get(type);
+        if (map == null) {
+            return;
+        }
         for (String key : map.keySet()) {
             TermWrapper wrap = ocur.get(key);
             TermWrapper wrap_ = map.get(key);
@@ -52,6 +56,9 @@ public class ResultAnalyzer {
         // split into cleaned single and multi-word phrase
         for (Entry<String, TermWrapper> entry : ocur.entrySet()) {
             TermWrapper value = entry.getValue();
+            if (value.getProbabilty() < getMinProbability()) {
+                continue;
+            }
             String key = entry.getKey();
             key = Utils.cleanString(key);
             avg += value.getOccur();
@@ -147,6 +154,14 @@ public class ResultAnalyzer {
             return Utils.toPercent(total, multiWord.size());
         }
         return 0;
+    }
+
+    public Double getMinProbability() {
+        return minProbability;
+    }
+
+    public void setMinProbability(Double minProbability) {
+        this.minProbability = minProbability;
     }
 
 }

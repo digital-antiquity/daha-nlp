@@ -39,10 +39,11 @@ public class Page {
         if (!helper.stringValid(key)) {
             return false;
         }
-        Map<String, TermWrapper> map = data.getOrDefault(helper.getType(), new HashMap<String, TermWrapper>());
+        String type = helper.getType();
+        Map<String, TermWrapper> map = data.getOrDefault(type, new HashMap<String, TermWrapper>());
 
         map.put(key, map.getOrDefault(key, new TermWrapper()).increment(probability));
-        data.put(key, map);
+        data.put(type, map);
         return true;
     }
 

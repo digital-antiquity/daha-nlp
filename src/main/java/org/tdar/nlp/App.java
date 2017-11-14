@@ -146,13 +146,21 @@ public class App {
                 "hill", "ranch"));
         int pos = 0;
         int pageNum = 1;
-        int maxPages = 10;
+        int maxPages = 1000;
         int total = 0;
         NlpDocument doc = new NlpDocument();
-        doc.getHelpers().add(person);
-        doc.getHelpers().add(cite);
-        doc.getHelpers().add(institution);
-        doc.getHelpers().add(location);
+        if (includePerson) {
+            doc.getHelpers().add(person);
+        }
+        if (includeCitation) {
+            doc.getHelpers().add(cite);
+        }
+        if (includeInstitution) {
+            doc.getHelpers().add(institution);
+        }
+        if (includeLocation) {
+            doc.getHelpers().add(location);
+        }
         Page page = new Page(pageNum);
         for (String sentence : sentenceDetector.sentDetect(input)) {
             log.trace(sentence);
@@ -194,7 +202,6 @@ public class App {
         // }
         //
     }
-
 
     private static File downloadModels() throws MalformedURLException, IOException, FileNotFoundException {
         List<URL> urls = new ArrayList<URL>();
