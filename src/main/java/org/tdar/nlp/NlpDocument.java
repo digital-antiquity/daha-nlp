@@ -83,17 +83,29 @@ public class NlpDocument {
     public void generateBibliography() {
         int avg = totalBib / pages.size();
         int bib = -1;
+        boolean bibSeen;
+        int below = 0;
         int bibPoint = pages.size() - pages.size() / 4;
         if (bibPoint != pages.size()) {
-            for (int i = bibPoint; i >= 0; i--) {
-                if (pages.get(i).getTotalReferences().get(Page.ALL) > avg) {
+            for (int i = bibPoint -1; i < pages.size(); i++) {
+                Integer num = pages.get(i).getTotalReferences().get(Page.ALL);
+                if (num > avg && bib == -1) {
                     bib = i;
-                } else if (bib > 0) {
-                    break;
+                } 
+                
+                // if we go down again, count it
+                if (num < avg) {
+                    below++;
+                }
+                
+                // if below > 2, then reset
+                if (below > 2 && pages.size() - i > 10) {
+                    below = 0;
+                    bib = -1;
                 }
             }
         }
-        log.debug("BibStart:" + bib);
+        log.debug("BibStart:" + bib + " avg:" + avg);
 
         for (int i = bib; i < pages.size(); i++) {
             Page page = pages.get(i);
@@ -130,6 +142,7 @@ public class NlpDocument {
             if (siteCodes.isEmpty()) {
                 runSiteCodes = true;
             }
+            
             for (Page page : _pages) {
                 result.addPage(page);
                 if (runSiteCodes) {

@@ -12,9 +12,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -52,6 +50,8 @@ public class App {
     private boolean includeInstitution = true;
     private boolean includeLocation = true;
     private boolean includeSiteCode = true;
+    private boolean includeCulture = true;
+    int maxPages = 1000;
     static boolean html = false;
 
     public static void main(String[] args) throws Exception {
@@ -59,7 +59,7 @@ public class App {
                 "Omar Turney then recommended him for a job with J.A. Mewkes at Elden Pueblo in Flagstaff, but he apparently was not hired, though his brother Paul was.");
 
         String filename = args[0];
-        // filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
+//         filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
         filename = "/Users/abrin/Downloads/ABDAHA-2/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
         if (filename != null) {
             File file = new File(filename);
@@ -106,8 +106,11 @@ public class App {
     private void run(String filename, String input, File dir) throws IOException, FileNotFoundException, InvalidFormatException {
         SentenceModel sModel = new SentenceModel(new FileInputStream(new File(dir, "en-sent.bin")));
         SentenceDetectorME sentenceDetector = new SentenceDetectorME(sModel);
+
         TokenizerModel tModel = new TokenizerModel(new FileInputStream(new File(dir, "en-token.bin")));
         TokenNameFinderModel modelcite = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-citation.bin")));
+        TokenNameFinderModel modelsite = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-site.bin")));
+        TokenNameFinderModel modelculture = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-culture.bin")));
         TokenNameFinderModel model = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-person.bin")));
         TokenNameFinderModel modelp = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-customperson.bin")));
         TokenNameFinderModel modelo = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-customorganization.bin")));
@@ -130,6 +133,9 @@ public class App {
         log.debug("    " + filename);
         log.debug("------------------------------------------------------------------------------------------------------------");
         NLPHelper person = new NLPHelper("person", model, modelp);
+        NLPHelper site = new NLPHelper("site", modelsite);
+        NLPHelper culture = new NLPHelper("culture", modelculture);
+        site.setBoostValues(Arrays.asList("site","ruin","excavation"));
         NLPHelper cite = new NLPHelper("citation", modelcite);
         cite.setRegexBoost(".+\\d++.*");
         NLPHelper institution = new NLPHelper("institution", modelo, modelo2);
@@ -146,7 +152,6 @@ public class App {
                 "hill", "ranch"));
         int pos = 0;
         int pageNum = 1;
-        int maxPages = 1000;
         int total = 0;
         NlpDocument doc = new NlpDocument();
         if (includePerson) {
@@ -155,37 +160,69 @@ public class App {
         if (includeCitation) {
             doc.getHelpers().add(cite);
         }
+        if (includeCulture) {
+            doc.getHelpers().add(culture);
+        }
         if (includeInstitution) {
             doc.getHelpers().add(institution);
         }
         if (includeLocation) {
             doc.getHelpers().add(location);
         }
+        if (includeSiteCode) {
+            doc.getHelpers().add(site);
+        }
         Page page = new Page(pageNum);
-        for (String sentence : sentenceDetector.sentDetect(input)) {
-            log.trace(sentence);
-            page.addSentence(sentence);
-            if (sentence.contains(END_PAGE)) {
-                log.debug("::: Page:" + pageNum + " : totalTokens: " + total + " total toc:" + page.getTocRank());
-                sentence = sentence.replace(END_PAGE, "");
-                total = 0;
-                pageNum++;
-                doc.addPage(page);
-                page = new Page(pageNum);
-            }
-            Tokenizer tokenizer = new TokenizerME(tModel);
-            if (includeSiteCode) {
-                page.extractSiteCodes(sentence);
-            }
-            String tokens[] = tokenizer.tokenize(sentence);
+        
+        List<String[]> pairs = new ArrayList<>();
+        pairs.add(new String[] {" o f ", " of "});
+        pairs.add(new String[] {" w ith", " with"});
+        pairs.add(new String[] {"I f ", "If "});
+        pairs.add(new String[] {" i f ", " if "});
+        pairs.add(new String[] {"m idd", "midd" });
+        pairs.add(new String[] {"M idd","Midd" });
+        pairs.add(new String[] {"prim ar","primar" });
+        pairs.add(new String[] {"tem poral","temporal" });
+        pairs.add(new String[] {" m ode"," mode" });
+        pairs.add(new String[] {" M ode"," Mode" });
+              
+        
+        for (String sentence__ : sentenceDetector.sentDetect(input)) {
+            // remove page #'s
+            sentence__ = sentence__.replaceAll("(?:^|\r?\n)[0-9]+(\r?\n)+"+END_PAGE, END_PAGE);
 
-            for (NLPHelper h : doc.getHelpers()) {
-                for (TokenNameFinderModel model_ : h.getModels()) {
-                    total += processResults(page, model_, tokens, pos, h);
+            for (String sentence_ : sentence__.split("(\n|\r\n)++")) {
+                String sentence = sentence_;
+                for (String[] pair : pairs) {
+                    sentence = StringUtils.replace(sentence, pair[0],pair[1]);
                 }
-            }
-            pos++;
 
+                if (sentence.indexOf(" ") == 1 && (sentence.indexOf("A") != 0) && sentence.indexOf("I") != 0) {
+                    sentence = StringUtils.replaceOnce(sentence, " ", "");
+                }
+                log.trace("::" + sentence);
+                page.addSentence(sentence);
+                if (sentence.contains(END_PAGE)) {
+                    log.debug("::: Page:" + pageNum + " : totalTokens: " + total + " total toc:" + page.getTocRank());
+                    sentence = sentence.replace(END_PAGE, "");
+                    total = 0;
+                    pageNum++;
+                    doc.addPage(page);
+                    page = new Page(pageNum);
+                }
+                Tokenizer tokenizer = new TokenizerME(tModel);
+                if (includeSiteCode) {
+                    page.extractSiteCodes(sentence);
+                }
+                String tokens[] = tokenizer.tokenize(sentence);
+
+                for (NLPHelper h : doc.getHelpers()) {
+                    for (TokenNameFinderModel model_ : h.getModels()) {
+                        total += processResults(page, model_, tokens, pos, h);
+                    }
+                }
+                pos++;
+            }
             if (pageNum > maxPages) {
                 break;
             }

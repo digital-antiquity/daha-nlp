@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.tdar.utils.SiteCodeExtractor;
@@ -13,10 +15,9 @@ public class Page {
     private Integer pageNumber;
     private Map<String, Map<String, TermWrapper>> data = new HashMap<>();
     private int tocRank = 0;
-    private List<String> tocAnchors = Arrays.asList("chapter", "table", "figure", "appendix", "list of","chapter o", "chapter t", "chapter 1","chapter 2");
+    private List<String> tocAnchors = Arrays.asList("chapter", "table", "figure", "appendix", "list of", "chapter o", "chapter t", "chapter 1", "chapter 2");
     private Map<String, Integer> siteCodes = new HashMap<>();
 
-    
     public Page(Integer pageNumber) {
         this.pageNumber = pageNumber;
     }
