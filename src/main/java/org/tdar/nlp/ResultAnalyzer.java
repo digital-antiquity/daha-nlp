@@ -45,6 +45,7 @@ public class ResultAnalyzer {
             } else {
                 wrap.combine(wrap_);
             }
+            log.trace("{} --> {}", key, wrap);
             ocur.put(key, wrap);
         }
     }
@@ -56,9 +57,11 @@ public class ResultAnalyzer {
         // split into cleaned single and multi-word phrase
         for (Entry<String, TermWrapper> entry : ocur.entrySet()) {
             TermWrapper value = entry.getValue();
+            log.trace("{} prob:{} ocur:{}", value.getTerm(), value.getProbabilty(), value.getOccur());
             if (value.getProbabilty() < getMinProbability()) {
                 continue;
             }
+
             String key = entry.getKey();
             key = Utils.cleanString(key);
             avg += value.getOccur();
@@ -109,10 +112,7 @@ public class ResultAnalyzer {
                     header += " ";
                 }
                 if (key > avg) {
-                    if (type.equalsIgnoreCase(PERSON) && Pattern.compile("\\d").matcher(val).find()) {
-                    } else {
                         log.debug(header + key + " | " + val);
-                    }
                 } else {
                     // log.debug(header + "| " + val);
                 }
@@ -142,6 +142,12 @@ public class ResultAnalyzer {
                     weightedOccurrence -=1000;
                 }
             }
+            
+            // for people and institutions, weight multi-word terms as higher
+            if ((StringUtils.equalsIgnoreCase(type, "person") || StringUtils.equalsIgnoreCase(type, "institution"))&& StringUtils.countMatches(key, " ") < 1) {
+                weightedOccurrence -= 200;
+            }
+            
             if (regexBoost != null && key.matches(regexBoost)) {
                 weightedOccurrence += 200;
             }

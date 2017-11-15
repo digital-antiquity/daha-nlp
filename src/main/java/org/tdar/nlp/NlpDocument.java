@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,7 +43,14 @@ public class NlpDocument {
         int start = -1;
         int end = -1;
         boolean seenLowEnd = false;
+        if (CollectionUtils.isEmpty(pages)) {
+            return;
+        }
         int avg = totalToc / pages.size() / 3;
+        // arbitrary guess
+        if (avg == 0) {
+            avg = 5;
+        }
         for (int i = 0; i < pages.size() / 2 ; i++) {
             Page page = pages.get(i);
             log.trace("page: " + i + " start: " + start + " end: " + end + " avg: "+ avg + " rank: " + page.getTocRank());
@@ -81,9 +89,11 @@ public class NlpDocument {
     }
 
     public void generateBibliography() {
+        if (CollectionUtils.isEmpty(pages)) {
+            return;
+        }
         int avg = totalBib / pages.size();
         int bib = -1;
-        boolean bibSeen;
         int below = 0;
         int bibPoint = pages.size() - pages.size() / 4;
         if (bibPoint != pages.size()) {
@@ -106,7 +116,9 @@ public class NlpDocument {
             }
         }
         log.debug("BibStart:" + bib + " avg:" + avg);
-
+        if (bib == -1) {
+            return;
+        }
         for (int i = bib; i < pages.size(); i++) {
             Page page = pages.get(i);
             body.remove(page);
@@ -136,8 +148,9 @@ public class NlpDocument {
         boolean runSiteCodes = false;
         for (NLPHelper helper : helpers) {
             ResultAnalyzer result = new ResultAnalyzer(helper);
+            log.trace(helper.getType());
             if (type == SectionType.BODY) {
-                result.setMinProbability(.9);
+                result.setMinProbability(.8);
             }
             if (siteCodes.isEmpty()) {
                 runSiteCodes = true;

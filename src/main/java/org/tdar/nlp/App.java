@@ -45,7 +45,7 @@ public class App {
     private static final String END_PAGE = "______END___PAGE______";
     private static final String START_PAGE = "______START_PAGE______";
     private final double minProbability = .5;
-    private boolean includeCitation = true;
+    private boolean includeCitation = false;
     private boolean includePerson = true;
     private boolean includeInstitution = true;
     private boolean includeLocation = true;
@@ -56,9 +56,9 @@ public class App {
 
     public static void main(String[] args) throws Exception {
         String input = new String(
-                "Omar Turney then recommended him for a job with J.A. Mewkes at Elden Pueblo in Flagstaff, but he apparently was not hired, though his brother Paul was.");
+                "Omar Turney then recommended him for a job with J.A. Mewkes at Elden Pueblo in Flagstaff; he went to Hohokam High School.");
 
-        String filename = args[0];
+        String filename = null;
 //         filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
         filename = "/Users/abrin/Downloads/ABDAHA-2/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
         if (filename != null) {
@@ -140,7 +140,7 @@ public class App {
         cite.setRegexBoost(".+\\d++.*");
         NLPHelper institution = new NLPHelper("institution", modelo, modelo2);
         institution.setBoostValues(
-                Arrays.asList("inc.", "co.", "university", "college", "museum", "company", "llc", "ltd", " of ", "office", "services", "group", "society"));
+                Arrays.asList("inc.", "co.", "university", "college", "museum", "company", "llc", "ltd", " of ", "office", "services", "society"));
         person.setMinTermLength(4);
         // matching initials
         person.setRegexBoost("(.+\\s\\w\\.\\s.+|\\w\\.\\s\\.+)");
@@ -152,7 +152,6 @@ public class App {
                 "hill", "ranch"));
         int pos = 0;
         int pageNum = 1;
-        int total = 0;
         NlpDocument doc = new NlpDocument();
         if (includePerson) {
             doc.getHelpers().add(person);
@@ -174,10 +173,13 @@ public class App {
         }
         Page page = new Page(pageNum);
         
+        
+        // as we get better here, for performance, this could be moved up into the cached text above
         List<String[]> pairs = new ArrayList<>();
         pairs.add(new String[] {" o f ", " of "});
         pairs.add(new String[] {" w ith", " with"});
         pairs.add(new String[] {"I f ", "If "});
+//        pairs.add(new String[] {"F loor ", "Floor "});
         pairs.add(new String[] {" i f ", " if "});
         pairs.add(new String[] {"m idd", "midd" });
         pairs.add(new String[] {"M idd","Midd" });
@@ -187,12 +189,14 @@ public class App {
         pairs.add(new String[] {" M ode"," Mode" });
               
         
+        String sentence = "";
         for (String sentence__ : sentenceDetector.sentDetect(input)) {
             // remove page #'s
+            // as we get better here, for performance, this could be moved up into the cached text above
             sentence__ = sentence__.replaceAll("(?:^|\r?\n)[0-9]+(\r?\n)+"+END_PAGE, END_PAGE);
 
             for (String sentence_ : sentence__.split("(\n|\r\n)++")) {
-                String sentence = sentence_;
+                sentence = sentence_;
                 for (String[] pair : pairs) {
                     sentence = StringUtils.replace(sentence, pair[0],pair[1]);
                 }
@@ -201,14 +205,12 @@ public class App {
                     sentence = StringUtils.replaceOnce(sentence, " ", "");
                 }
                 log.trace("::" + sentence);
-                page.addSentence(sentence);
                 if (sentence.contains(END_PAGE)) {
-                    log.debug("::: Page:" + pageNum + " : totalTokens: " + total + " total toc:" + page.getTocRank());
-                    sentence = sentence.replace(END_PAGE, "");
-                    total = 0;
+                    sentence = addPage(doc, page, sentence);
                     pageNum++;
-                    doc.addPage(page);
                     page = new Page(pageNum);
+                } else {
+                    page.addSentence(sentence);
                 }
                 Tokenizer tokenizer = new TokenizerME(tModel);
                 if (includeSiteCode) {
@@ -218,7 +220,7 @@ public class App {
 
                 for (NLPHelper h : doc.getHelpers()) {
                     for (TokenNameFinderModel model_ : h.getModels()) {
-                        total += processResults(page, model_, tokens, pos, h);
+                        processResults(page, model_, tokens, pos, h);
                     }
                 }
                 pos++;
@@ -227,7 +229,8 @@ public class App {
                 break;
             }
         }
-
+        //add last page
+        addPage(doc, page, sentence);
         doc.analyze();
         doc.printResults();
 
@@ -240,6 +243,15 @@ public class App {
         //
     }
 
+    private String addPage(NlpDocument doc, Page page, String sentence) {
+        sentence = sentence.replace(END_PAGE, "");
+        page.addSentence(sentence);
+        doc.addPage(page);
+        log.debug(page);
+        return sentence;
+    }
+
+    
     private static File downloadModels() throws MalformedURLException, IOException, FileNotFoundException {
         List<URL> urls = new ArrayList<URL>();
         urls.add(new URL("http://opennlp.sourceforge.net/models-1.5/en-sent.bin"));
@@ -263,7 +275,7 @@ public class App {
         return dir;
     }
 
-    private int processResults(Page page, TokenNameFinderModel model3, String[] tokens, int pos, NLPHelper helper) {
+    private void processResults(Page page, TokenNameFinderModel model3, String[] tokens, int pos, NLPHelper helper) {
         // https://opennlp.apache.org/documentation/1.5.3/manual/opennlp.html
         NameFinderME nameFinder = new NameFinderME(model3);
 
@@ -271,9 +283,7 @@ public class App {
         // EMBED ONE INSIDE THE OTHER
         Span[] names = nameFinder.find(tokens);
         String[] matches = Span.spansToStrings(names, tokens);
-        int total = 0;
         for (int i = 0; i < matches.length; i++) {
-            boolean valid = false;
             Span span = names[i];
             String name = matches[i];
             String prev = "";
@@ -286,16 +296,14 @@ public class App {
                     continue;
                 }
             }
-            if (span.getProb() > getMinProbability()) {
-                valid = page.appendOcurrenceMap(name, pos, span.getProb(), helper);
+            String key = Utils.cleanString(name);
+            if (!helper.stringValid(key)) {
+                return;
             }
 
-            if (valid) {
-                total++;
-            }
+            page.addSpan(span, key, pos, helper.getType());
         }
         nameFinder.clearAdaptiveData();
-        return total;
     }
 
     public double getMinProbability() {

@@ -1,14 +1,19 @@
 package org.tdar.nlp;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tdar.utils.SiteCodeExtractor;
+
+import opennlp.tools.util.Span;
 
 public class Page {
     public static final String ALL = "ALL";
@@ -17,6 +22,8 @@ public class Page {
     private int tocRank = 0;
     private List<String> tocAnchors = Arrays.asList("chapter", "table", "figure", "appendix", "list of", "chapter o", "chapter t", "chapter 1", "chapter 2");
     private Map<String, Integer> siteCodes = new HashMap<>();
+
+    private final Logger log = LogManager.getLogger(getClass());
 
     public Page(Integer pageNumber) {
         this.pageNumber = pageNumber;
@@ -34,21 +41,16 @@ public class Page {
         return data;
     }
 
-    public boolean appendOcurrenceMap(String name, int pos, double probability, NLPHelper helper) {
-        String key = Utils.cleanString(name);
-
-        if (!helper.stringValid(key)) {
-            return false;
-        }
-        String type = helper.getType();
-        Map<String, TermWrapper> map = data.getOrDefault(type, new HashMap<String, TermWrapper>());
-
-        map.put(key, map.getOrDefault(key, new TermWrapper()).increment(probability));
-        data.put(type, map);
+    private boolean appendOcurrenceMap(SpanWrapper sw) {
+        //String key, int pos, double probability, String type) {
+        Map<String, TermWrapper> map = data.getOrDefault(sw.getType(), new HashMap<String, TermWrapper>());
+        map.put(sw.getText(), map.getOrDefault(sw.getText(), new TermWrapper(sw.getText())).increment(sw.getProb()));
+        data.put(sw.getType(), map);
         return true;
     }
 
     Map<String, Integer> totals;
+    private List<SpanWrapper> spans = new ArrayList<>();
 
     public Map<String, Integer> getTotalReferences() {
         if (totals != null) {
@@ -71,6 +73,7 @@ public class Page {
 
     public void addSentence(String sentence) {
         addTocRank(sentence);
+        reconcileSpans();
 
     }
 
@@ -103,12 +106,9 @@ public class Page {
 
     public void extractSiteCodes(String sentence) {
         for (String code : SiteCodeExtractor.extractSiteCodeTokens(sentence, false)) {
-            Integer integer = getSiteCodes().get(code);
-            if (integer == null) {
-                integer = 1;
-            } else {
-                integer = integer + 1;
-            }
+            Integer integer = getSiteCodes().getOrDefault(code, 0);
+
+            integer = integer + 1;
             getSiteCodes().put(code, integer);
         }
     }
@@ -119,5 +119,69 @@ public class Page {
 
     public void setSiteCodes(Map<String, Integer> siteCodes) {
         this.siteCodes = siteCodes;
+    }
+
+    public void addSpan(Span span, String text, int pos, String type) {
+        this.spans.add(new SpanWrapper(span, text, pos, type));
+    }
+
+    @Override
+    public String toString() {
+        return String.format("page: %s tokens: %s toc: %s", pageNumber, totals.get(ALL), tocRank);
+    }
+
+    
+    public void reconcileSpans() {
+
+        // sort tokens by start, then end, to be able to compare overlaps
+        Collections.sort(spans, new Comparator<SpanWrapper>() {
+
+            @Override
+            public int compare(SpanWrapper o1_, SpanWrapper o2_) {
+                Span o1 = o1_.getSpan();
+                Span o2 = o2_.getSpan();
+
+                // prefer earlier start
+                if (o1.getStart() < o2.getStart()) {
+                    return -1;
+                }
+
+                // if start and end the same, prefer later end (we want the tag that's the longest)
+                if (o1.getStart() == o2.getStart()) {
+                    if (o1.getEnd() > o2.getEnd()) {
+                        return -1;
+                    }
+                }
+                
+                if (o1.getStart() == o2.getStart() && o1.getEnd() == o2.getEnd()) {
+                    return 0;
+                }
+
+                return 1;
+            }
+        });
+        SpanWrapper current = null;
+        List<SpanWrapper> toRemove = new ArrayList<>();
+        for (SpanWrapper wrap : spans) {
+            log.trace(wrap);
+            if (current !=  null && (current.getSpan().contains(wrap.getSpan()) || current.getSpan().intersects(wrap.getSpan()))) {
+                log.trace("removing: {} {} {}", wrap.getText(), wrap.getSpan().getProb(), current.getSpan().getProb());
+                if (StringUtils.equals(current.getType() , wrap.getType())) {
+                    current.addProb(wrap.getSpan().getProb());
+                }
+                toRemove.add(wrap);
+            } else {
+                current = wrap;
+            }
+        }
+        log.trace("   spans: {}", spans);
+        log.trace("toRemove: {}", toRemove);
+        spans.removeAll(toRemove);
+        log.trace("    done: {}", spans);
+        for (SpanWrapper sw : spans) {
+            appendOcurrenceMap(sw);
+        }
+
+        spans.clear();
     }
 }

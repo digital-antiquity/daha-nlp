@@ -14,6 +14,10 @@ public class TermWrapper {
     private int occur = 1;
     private List<Double> probability = new ArrayList<>();
     
+    public TermWrapper(String text) {
+        this.term = text;
+    }
+
     public Double getProbabilty() {
         if (probability.size() < 1) {
             return .9;
