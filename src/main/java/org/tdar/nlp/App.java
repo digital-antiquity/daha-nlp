@@ -27,7 +27,7 @@ import org.apache.pdfbox.tools.PDFText2HTML;
 public class App {
 
     private static boolean html;
-    private final Logger log = LogManager.getLogger(getClass());
+    static final Logger log = LogManager.getLogger(App.class);
 
     public static void main(String[] args) throws Exception {
         String input = new String(
@@ -50,17 +50,18 @@ public class App {
         if (filename != null) {
             File file = new File(filename);
             if (file.isDirectory()) {
-                files.addAll(FileUtils.listFiles(file, new String[] { "txt", "pdf" }, true));
+                files.addAll(FileUtils.listFiles(file, new String[] { ".txt", ".pdf" }, true));
             } else {
                 files.add(file);
             }
         }
         for (File file_ : files) {
-            File file = processFile(filename, file_);
+            log.debug(file_);
+            File file = processFile(file_);
             input = FileUtils.readFileToString(file);
             try {
                 DocumentAnalyzer app = new DocumentAnalyzer();
-                app.run(filename, input, dir);
+                app.run(file.getName(), input, dir);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -68,7 +69,8 @@ public class App {
 
     }
 
-    private static File processFile(String filename, File file) throws IOException, InvalidPasswordException {
+    private static File processFile(File file) throws IOException, InvalidPasswordException {
+        String filename = file.getName();
         if (FilenameUtils.getExtension(filename).equalsIgnoreCase("pdf")) {
             String base = FilenameUtils.getBaseName(filename);
             File parent = new File("tmp");
