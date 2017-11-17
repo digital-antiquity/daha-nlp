@@ -65,8 +65,8 @@ public class App {
                 input = FileUtils.readFileToString(file);
                 DocumentAnalyzer app = new DocumentAnalyzer();
                 app.run(file.getName(), input, dir);
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                log.error("{}",e,e);
             }
         }
 
