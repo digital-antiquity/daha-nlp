@@ -3,6 +3,7 @@ package org.tdar.nlp;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.tdar.nlp.nlp.NLPHelper;
 
 public class NumericCountTest {
 

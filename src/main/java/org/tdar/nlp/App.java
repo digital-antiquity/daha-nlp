@@ -24,6 +24,12 @@ import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.tools.PDFText2HTML;
+import org.tdar.nlp.document.NlpDocument;
+import org.tdar.nlp.document.NlpPage;
+import org.tdar.nlp.nlp.NLPHelper;
+import org.tdar.nlp.result.ResultDocument;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import opennlp.tools.doccat.DoccatFactory;
 import opennlp.tools.doccat.FeatureGenerator;
@@ -58,9 +64,17 @@ public class App {
         String input = new String(
                 "Omar Turney then recommended him for a job with J.A. Mewkes at Elden Pueblo in Flagstaff; he went to Hohokam High School.");
 
-        String filename = null;
+        String filename = null; 
+        if (args != null && args.length > 0) {
+            filename = args[0];
+        }
+        if (filename == null) {
 //         filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
         filename = "/Users/abrin/Downloads/ABDAHA-2/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
+//        filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
+        }
+
+        System.setProperty("java.awt.headless", "true");
         if (filename != null) {
             File file = new File(filename);
 
@@ -152,7 +166,7 @@ public class App {
                 "hill", "ranch"));
         int pos = 0;
         int pageNum = 1;
-        NlpDocument doc = new NlpDocument();
+        NlpDocument doc = new NlpDocument(filename);
         if (includePerson) {
             doc.getHelpers().add(person);
         }
@@ -171,7 +185,7 @@ public class App {
         if (includeSiteCode) {
             doc.getHelpers().add(site);
         }
-        Page page = new Page(pageNum);
+        NlpPage page = new NlpPage(pageNum);
         
         
         // as we get better here, for performance, this could be moved up into the cached text above
@@ -208,7 +222,7 @@ public class App {
                 if (sentence.contains(END_PAGE)) {
                     sentence = addPage(doc, page, sentence);
                     pageNum++;
-                    page = new Page(pageNum);
+                    page = new NlpPage(pageNum);
                 } else {
                     page.addSentence(sentence);
                 }
@@ -232,7 +246,11 @@ public class App {
         //add last page
         addPage(doc, page, sentence);
         doc.analyze();
-        doc.printResults();
+        ResultDocument result = doc.printResults();
+        ObjectMapper objectMapper = new ObjectMapper();
+        File outDir = new File("out");
+        outDir.mkdirs();
+        objectMapper.writeValue(new File(outDir, FilenameUtils.getBaseName(filename) + ".json"), result);
 
         // DoccatModel m = new DoccatModel(new FileInputStream(""));
         // DocumentCategorizerME myCategorizer = new DocumentCategorizerME(m);
@@ -243,7 +261,7 @@ public class App {
         //
     }
 
-    private String addPage(NlpDocument doc, Page page, String sentence) {
+    private String addPage(NlpDocument doc, NlpPage page, String sentence) {
         sentence = sentence.replace(END_PAGE, "");
         page.addSentence(sentence);
         doc.addPage(page);
@@ -275,7 +293,7 @@ public class App {
         return dir;
     }
 
-    private void processResults(Page page, TokenNameFinderModel model3, String[] tokens, int pos, NLPHelper helper) {
+    private void processResults(NlpPage page, TokenNameFinderModel model3, String[] tokens, int pos, NLPHelper helper) {
         // https://opennlp.apache.org/documentation/1.5.3/manual/opennlp.html
         NameFinderME nameFinder = new NameFinderME(model3);
 

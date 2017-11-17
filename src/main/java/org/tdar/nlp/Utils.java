@@ -1,9 +1,9 @@
 package org.tdar.nlp;
 
 public class Utils {
-    static final String PUNCTUATION = "\\.;\\(\\)\\[\\]\\?\\-\\_\\,\\^\\&°£»\\|\\*\\/’\"\'«";
+    public static final String PUNCTUATION = "\\.;\\(\\)\\[\\]\\?\\-\\_\\,\\^\\&°£»\\|\\*\\/’\"\'«";
 
-    static int toPercent(int numCount, int totalCount) {
+    public static int toPercent(int numCount, int totalCount) {
         return (int) (((float) numCount / (float) totalCount) * 100);
     }
 

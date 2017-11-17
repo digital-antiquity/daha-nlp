@@ -10,8 +10,12 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.jena.sparql.function.library.leviathan.sec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tdar.nlp.document.NlpPage;
+import org.tdar.nlp.nlp.NLPHelper;
+import org.tdar.nlp.result.Section;
 
 public class ResultAnalyzer {
 
@@ -31,7 +35,7 @@ public class ResultAnalyzer {
         this.regexBoost = helper.getRegexBoost();
     }
     
-    public void addPage(Page page) {
+    public void addPage(NlpPage page) {
         Map<String, TermWrapper> map = page.getReferences().get(type);
         if (map == null) {
             return;
@@ -50,7 +54,7 @@ public class ResultAnalyzer {
         }
     }
 
-    public void printOccurrence() {
+    public void printOccurrence(Section section) {
         int avg = 0;
         Map<String, TermWrapper> multiWord = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -97,14 +101,15 @@ public class ResultAnalyzer {
         Map<Integer, List<String>> reverse = new HashMap<>();
         int weightedAvg = sortByOccurrence(multiWord, reverse);
 
-        printResults(type, avg, reverse);
+        printResults(type, avg, reverse, section);
     }
 
-    private void printResults(String type, int avg, Map<Integer, List<String>> reverse) {
+    private void printResults(String type, int avg, Map<Integer, List<String>> reverse, Section section) {
         // output
         List<Integer> list = new ArrayList<Integer>(reverse.keySet());
         Collections.sort(list);
         Collections.reverse(list);
+        Map<String,Integer> results = section.getResults().getOrDefault(type, new HashMap<String,Integer>());
         for (Integer key : list) {
             for (String val : reverse.get(key)) {
                 String header = type;
@@ -113,11 +118,13 @@ public class ResultAnalyzer {
                 }
                 if (key > avg) {
                         log.debug(header + key + " | " + val);
+                        results.put(val, key);
                 } else {
                     // log.debug(header + "| " + val);
                 }
             }
         }
+        section.getResults().put(type, results);
     }
 
     /**

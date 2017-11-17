@@ -1,4 +1,4 @@
-package org.tdar.nlp;
+package org.tdar.nlp.nlp;
 
 import opennlp.tools.util.Span;
 

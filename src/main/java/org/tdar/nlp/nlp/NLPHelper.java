@@ -1,4 +1,4 @@
-package org.tdar.nlp;
+package org.tdar.nlp.nlp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tdar.nlp.Utils;
 
 import opennlp.tools.namefind.TokenNameFinderModel;
 
@@ -46,7 +47,7 @@ public class NLPHelper {
     }
 
 
-    boolean stringValid(String key) {
+    public boolean stringValid(String key) {
         if ((StringUtils.contains(key, "=\"") || StringUtils.contains(key, "=\'")) && REMOVE_HTML_TERMS) {
             return false;
         }

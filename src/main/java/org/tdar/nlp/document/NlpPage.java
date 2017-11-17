@@ -1,4 +1,4 @@
-package org.tdar.nlp;
+package org.tdar.nlp.document;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,21 +11,23 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tdar.nlp.TermWrapper;
+import org.tdar.nlp.nlp.SpanWrapper;
 import org.tdar.utils.SiteCodeExtractor;
 
 import opennlp.tools.util.Span;
 
-public class Page {
+public class NlpPage {
     public static final String ALL = "ALL";
     private Integer pageNumber;
     private Map<String, Map<String, TermWrapper>> data = new HashMap<>();
     private int tocRank = 0;
-    private List<String> tocAnchors = Arrays.asList("chapter", "table", "figure", "appendix", "list of", "chapter o", "chapter t", "chapter 1", "chapter 2");
     private Map<String, Integer> siteCodes = new HashMap<>();
+    private List<String> tocAnchors = Arrays.asList("chapter", "table", "figure", "appendix", "list of", "chapter o", "chapter t", "chapter 1", "chapter 2");
 
     private final Logger log = LogManager.getLogger(getClass());
 
-    public Page(Integer pageNumber) {
+    public NlpPage(Integer pageNumber) {
         this.pageNumber = pageNumber;
     }
 
@@ -44,7 +46,9 @@ public class Page {
     private boolean appendOcurrenceMap(SpanWrapper sw) {
         //String key, int pos, double probability, String type) {
         Map<String, TermWrapper> map = data.getOrDefault(sw.getType(), new HashMap<String, TermWrapper>());
-        map.put(sw.getText(), map.getOrDefault(sw.getText(), new TermWrapper(sw.getText())).increment(sw.getProb()));
+        TermWrapper value = new TermWrapper(sw.getText());
+        value.setPos(sw.getPos());
+        map.put(sw.getText(), map.getOrDefault(sw.getText(), value).increment(sw.getProb()));
         data.put(sw.getType(), map);
         return true;
     }

@@ -1,17 +1,26 @@
 package org.tdar.nlp;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-public class TermWrapper {
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+@JsonAutoDetect
+public class TermWrapper implements Serializable {
+
+    private static final long serialVersionUID = -2291573697494383973L;
+    @JsonIgnore
     private String term;
+    @JsonIgnore
     private List<TermWrapper> alternates = new ArrayList<>();
     private int pos;
     private int occur = 1;
+    @JsonIgnore
     private List<Double> probability = new ArrayList<>();
     
     public TermWrapper(String text) {

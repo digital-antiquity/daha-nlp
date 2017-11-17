@@ -13,3 +13,4 @@ gate/plugins/unused
 logs
 .DS_Store
 tmp
+out
