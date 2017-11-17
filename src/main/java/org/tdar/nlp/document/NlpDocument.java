@@ -58,7 +58,7 @@ public class NlpDocument {
         int start = -1;
         int end = -1;
         boolean seenLowEnd = false;
-        if (CollectionUtils.isEmpty(pages)) {
+        if (CollectionUtils.isEmpty(pages) || pages.size()  < 3) {
             return;
         }
         
