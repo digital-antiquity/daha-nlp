@@ -50,7 +50,7 @@ public class App {
         if (filename != null) {
             File file = new File(filename);
             if (file.isDirectory()) {
-                files.addAll(FileUtils.listFiles(file, new String[] { ".txt", ".pdf" }, true));
+                files.addAll(FileUtils.listFiles(file, new String[] { "txt", "pdf" }, true));
             } else {
                 files.add(file);
             }
