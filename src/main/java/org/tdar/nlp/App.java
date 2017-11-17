@@ -23,9 +23,12 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.tools.PDFText2HTML;
+import org.tdar.nlp.nlp.DocumentAnalyzer;
 
 public class App {
 
+    private static final String OPENNLP_MODEL_VER = "1.5";
+    private static final String OPENNLP_URL = "http://opennlp.sourceforge.net/models-"+OPENNLP_MODEL_VER+"/";
     private static boolean html;
     static final Logger log = LogManager.getLogger(App.class);
 
@@ -38,7 +41,7 @@ public class App {
             filename = args[0];
         }
         if (filename == null) {
-            // filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
+//             filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
             filename = "/Users/abrin/Downloads/ABDAHA-2/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
             // filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
         }
@@ -101,15 +104,17 @@ public class App {
 
     private static File downloadModels() throws MalformedURLException, IOException, FileNotFoundException {
         List<URL> urls = new ArrayList<URL>();
-        urls.add(new URL("http://opennlp.sourceforge.net/models-1.5/en-sent.bin"));
-        urls.add(new URL("http://opennlp.sourceforge.net/models-1.5/en-token.bin"));
-        urls.add(new URL("http://opennlp.sourceforge.net/models-1.5/en-ner-organization.bin"));
-        urls.add(new URL("http://opennlp.sourceforge.net/models-1.5/en-ner-person.bin"));
-        urls.add(new URL("http://opennlp.sourceforge.net/models-1.5/en-ner-location.bin"));
+        urls.add(new URL(OPENNLP_URL + "en-sent.bin"));
+        urls.add(new URL(OPENNLP_URL + "en-token.bin"));
+        urls.add(new URL(OPENNLP_URL + "en-ner-organization.bin"));
+        urls.add(new URL(OPENNLP_URL + "en-ner-date.bin"));
+        urls.add(new URL(OPENNLP_URL + "en-ner-time.bin"));
+        urls.add(new URL(OPENNLP_URL + "en-ner-person.bin"));
+        urls.add(new URL(OPENNLP_URL + "en-ner-location.bin"));
         File dir = new File("models");
         dir.mkdir();
         for (URL url : urls) {
-            String urlToLoad = StringUtils.substringAfter(url.toString(), "1.5/");
+            String urlToLoad = StringUtils.substringAfter(url.toString(), OPENNLP_MODEL_VER+"/");
             File f = new File(dir, urlToLoad);
             if (!f.exists()) {
 
