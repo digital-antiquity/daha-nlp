@@ -60,9 +60,9 @@ public class App {
         }
         for (File file_ : files) {
             log.debug(file_);
-            File file = processFile(file_);
-            input = FileUtils.readFileToString(file);
             try {
+                File file = processFile(file_);
+                input = FileUtils.readFileToString(file);
                 DocumentAnalyzer app = new DocumentAnalyzer();
                 app.run(file.getName(), input, dir);
             } catch (IOException e) {
