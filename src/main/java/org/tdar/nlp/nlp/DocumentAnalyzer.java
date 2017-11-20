@@ -11,11 +11,15 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tdar.nlp.Utils;
@@ -29,6 +33,7 @@ import opennlp.tools.doccat.DoccatFactory;
 import opennlp.tools.doccat.FeatureGenerator;
 import opennlp.tools.doccat.NGramFeatureGenerator;
 import opennlp.tools.namefind.NameFinderME;
+import opennlp.tools.namefind.RegexNameFinder;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
@@ -127,7 +132,17 @@ public class DocumentAnalyzer {
         }
         doc.getHelpers().add(date);
         NlpPage page = new NlpPage(pageNum);
-        
+        List<String> cultures = new ArrayList<>();
+        Pattern testPattern = Pattern.compile("("+StringUtils.join(cultures,"|")+")");
+
+        Pattern[] patterns = new Pattern[]{testPattern};
+        Map<String, Pattern[]> regexMap = new HashMap<>();
+        String type = "testtype";
+
+        regexMap.put(type, patterns);
+
+        RegexNameFinder finder =
+        new RegexNameFinder(regexMap);
         
         // as we get better here, for performance, this could be moved up into the cached text above
         List<String[]> pairs = new ArrayList<>();

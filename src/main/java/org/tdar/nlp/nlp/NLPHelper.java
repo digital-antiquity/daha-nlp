@@ -52,6 +52,8 @@ public class NLPHelper {
             return false;
         }
 
+        
+        // see http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.81.8901&rep=rep1&type=pdf for more ideas
         if (key.matches(NUMERIC_PUNCTUATION)) {
             return false;
         }
