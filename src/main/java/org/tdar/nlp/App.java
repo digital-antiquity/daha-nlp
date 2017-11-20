@@ -32,6 +32,9 @@ public class App {
     private static boolean html;
     static final Logger log = LogManager.getLogger(App.class);
 
+    
+    //can we extract title by matching on common words?
+    
     public static void main(String[] args) throws Exception {
         String input = new String(
                 "Omar Turney then recommended him for a job with J.A. Mewkes at Elden Pueblo in Flagstaff; he went to Hohokam High School.");
@@ -44,6 +47,7 @@ public class App {
 //             filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
             filename = "/Users/abrin/Downloads/ABDAHA-2/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
             // filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
+             filename = "tmp/Underfleet1.html.txt";
         }
 
         File dir = downloadModels();

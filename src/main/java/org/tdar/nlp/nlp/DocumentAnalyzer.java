@@ -19,7 +19,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tdar.nlp.Utils;
@@ -141,8 +140,7 @@ public class DocumentAnalyzer {
 
         regexMap.put(type, patterns);
 
-        RegexNameFinder finder =
-        new RegexNameFinder(regexMap);
+        RegexNameFinder finder =         new RegexNameFinder(regexMap);
         
         // as we get better here, for performance, this could be moved up into the cached text above
         List<String[]> pairs = new ArrayList<>();
@@ -157,14 +155,17 @@ public class DocumentAnalyzer {
         pairs.add(new String[] {"tem poral","temporal" });
         pairs.add(new String[] {" m ode"," mode" });
         pairs.add(new String[] {" M ode"," Mode" });
-              
+        boolean seenApachePagemarker = false;
         
         String sentence = "";
+        if (input.contains(END_PAGE)) {
+            seenApachePagemarker = true;
+        }
         for (String sentence__ : sentenceDetector.sentDetect(input)) {
             // remove page #'s
             // as we get better here, for performance, this could be moved up into the cached text above
             sentence__ = sentence__.replaceAll("(?:^|\r?\n)[0-9]+(\r?\n)+"+END_PAGE, END_PAGE);
-
+            
             for (String sentence_ : sentence__.split("(\n|\r\n)++")) {
                 sentence = sentence_;
                 for (String[] pair : pairs) {
@@ -175,7 +176,7 @@ public class DocumentAnalyzer {
                     sentence = StringUtils.replaceOnce(sentence, " ", "");
                 }
                 log.trace("::" + sentence);
-                if (sentence.contains(END_PAGE)) {
+                if (sentence.contains(END_PAGE) || (seenApachePagemarker == false && sentence.contains("     ----------------------------------------------------------------------"))) {
                     sentence = addPage(doc, page, sentence);
                     pageNum++;
                     page = new NlpPage(pageNum);

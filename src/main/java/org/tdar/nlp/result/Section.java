@@ -1,7 +1,9 @@
 package org.tdar.nlp.result;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -14,6 +16,7 @@ public class Section implements Serializable {
     private int startPage;
     private int endPage;
     private Map<String, Map<String, Integer>> results = new HashMap<>();
+    private List<String> sentences = new ArrayList<>();
 
     public Section(SectionType type) {
         this.type = type;
@@ -49,6 +52,18 @@ public class Section implements Serializable {
 
     public void setResults(Map<String, Map<String, Integer>> results) {
         this.results = results;
+    }
+
+    public void addSentences(List<String> sentences) {
+        this.getSentences().addAll(sentences);
+    }
+
+    public List<String> getSentences() {
+        return sentences;
+    }
+
+    public void setSentences(List<String> sentences) {
+        this.sentences = sentences;
     }
 
 }

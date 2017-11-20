@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tdar.nlp.nlp.NLPHelper;
 import org.tdar.nlp.nlp.ResultAnalyzer;
+import org.tdar.nlp.result.Page;
 import org.tdar.nlp.result.ResultDocument;
 import org.tdar.nlp.result.Section;
 import org.tdar.nlp.result.SectionType;
@@ -179,7 +180,11 @@ public class NlpDocument {
             Section section = new Section(type);
             section.setStartPage(_pages.get(0).getPageNumber());
             section.setEndPage(_pages.get(_pages.size() - 1).getPageNumber());
-
+            if (section.getType() == SectionType.FRONT) {
+                for (NlpPage page :_pages) {
+                    section.addSentences(page.getSentences());
+                }
+            }
             resultDocument.getSections().add(section);
             for (NLPHelper helper : helpers) {
                 ResultAnalyzer result = new ResultAnalyzer(helper);

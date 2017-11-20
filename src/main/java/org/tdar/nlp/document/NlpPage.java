@@ -55,6 +55,7 @@ public class NlpPage {
 
     Map<String, Integer> totals;
     private List<SpanWrapper> spans = new ArrayList<>();
+    private List<String> sentences = new ArrayList<>();
 
     public Map<String, Integer> getTotalReferences() {
         if (totals != null) {
@@ -77,6 +78,7 @@ public class NlpPage {
 
     public void addSentence(String sentence) {
         addTocRank(sentence);
+        getSentences().add(sentence);
         reconcileSpans();
 
     }
@@ -187,5 +189,9 @@ public class NlpPage {
         }
 
         spans.clear();
+    }
+
+    public List<String> getSentences() {
+        return sentences ;
     }
 }
