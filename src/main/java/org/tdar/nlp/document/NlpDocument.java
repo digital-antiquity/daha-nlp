@@ -90,7 +90,9 @@ public class NlpDocument {
         if (start == -1) {
             start = 2;
         }
-        
+        if (start > 20) {
+            return;
+        }
         if (start > 0) {
             for (int i = 0; i < start; i++) {
                 NlpPage page = pages.get(i);

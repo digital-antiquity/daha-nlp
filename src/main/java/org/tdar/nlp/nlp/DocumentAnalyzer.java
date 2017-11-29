@@ -27,6 +27,7 @@ import org.tdar.nlp.document.NlpPage;
 import org.tdar.nlp.result.ResultDocument;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import opennlp.tools.doccat.DoccatFactory;
 import opennlp.tools.doccat.FeatureGenerator;
@@ -207,6 +208,7 @@ public class DocumentAnalyzer {
         ObjectMapper objectMapper = new ObjectMapper();
         File outDir = new File("out");
         outDir.mkdirs();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         objectMapper.writeValue(new File(outDir, FilenameUtils.getBaseName(filename) + ".json"), result);
 
         // DoccatModel m = new DoccatModel(new FileInputStream(""));
