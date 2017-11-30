@@ -2,30 +2,19 @@ package org.tdar.nlp;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.pdfbox.io.MemoryUsageSetting;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.apache.pdfbox.tools.PDFText2HTML;
-import org.tdar.nlp.nlp.DocumentAnalyzer;
 
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
@@ -37,8 +26,6 @@ import opennlp.tools.tokenize.TokenizerModel;
 
 public class SentenceStripper {
 
-    private static final String OPENNLP_MODEL_VER = "1.5";
-    private static final String OPENNLP_URL = "http://opennlp.sourceforge.net/models-" + OPENNLP_MODEL_VER + "/";
     private static boolean html;
     private static String tagName = "culture";
     static final Logger log = LogManager.getLogger(SentenceStripper.class);
@@ -55,14 +42,14 @@ public class SentenceStripper {
         }
         if (filename == null) {
             // Hohokam
-            filename = "/Users/abrin/Dropbox (ASU)/PDFA-Analysis/lc4-abbyy12-pdfa.pdf";
-//             filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
-            // filename = "/Users/abrin/Downloads/ABDAHA-2/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
+             filename = "/Users/abrin/Dropbox (ASU)/PDFA-Analysis/lc4-abbyy12-pdfa.pdf";
+//            filename = "/Users/abrin/Downloads/ABDAHA/Kelly-et-al-2010_OCR_PDFA.pdf";
+//             filename = "/Users/abrin/Downloads/ABDAHA/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
             // filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
             // filename = "tmp/Underfleet1.html.txt";
         }
 
-        File dir = downloadModels();
+        File dir = ModelDownloader.downloadModels();
         System.setProperty("java.awt.headless", "true");
 
         List<File> files = new ArrayList<>();
@@ -74,96 +61,139 @@ public class SentenceStripper {
                 files.add(file);
             }
         }
+        PdfOcrCleanup cleaner = new PdfOcrCleanup();
         for (File file_ : files) {
-            log.debug(file_);
             try {
-                File file = processFile(file_);
+                File file = cleaner.processFile(file_, html);
                 input = FileUtils.readFileToString(file);
                 SentenceModel sModel = new SentenceModel(new FileInputStream(new File(dir, "en-sent.bin")));
                 SentenceDetectorME sentenceDetector = new SentenceDetectorME(sModel);
                 POSModel posModel = new POSModel(new File(dir, "en-pos-maxent.bin"));
                 POSTaggerME tagger = new POSTaggerME(posModel);
                 TokenizerModel tokenizerModel = new TokenizerModel(new FileInputStream(new File(dir, "en-token.bin")));
+                String types = IOUtils.toString(new FileInputStream("ontologies/CeramicType_Wares.txt"));
+                types = IOUtils.toString(new FileInputStream("ontologies/Cultures_flattened.txt"));
+                List<String> list = new ArrayList<>(Arrays.asList(types.split("[\r\n]")));
 
-                for (String sentence__ : sentenceDetector.sentDetect(input)) {
-                    // https://www.sketchengine.co.uk/penn-treebank-tagset/
-                    sentence__ = sentence__.replaceAll("[\r\n]", "");
-                    for (String term : java.util.Arrays.asList("yavapai", "apache", "pima","ootam","spanish","hopi","hohokam","anasazi","classic period","preclassic period")) {
-                        if (!sentence__.toLowerCase().contains(term)) {
-                            continue;
+                list.removeAll(Collections.singleton(""));
+                List<String> toAdd = new ArrayList<>();
+                for (String entry: list) {
+                    if (entry.contains(" ")) {
+                        toAdd.add(entry.replace(" ", "_"));
+                        toAdd.add(entry.replace("-", "_"));
+                    }
+                }
+
+                list.addAll(toAdd);
+                // get the longest first
+                Collections.sort(list, new Comparator<String>() {
+
+                    @Override
+                    public int compare(String o1, String o2) {
+                        if (o1.length() == o2.length()) {
+                            return o1.compareTo(o2);
                         }
+                        if (o1.length() > o2.length()) {
+                            return -1;
+                        } else {
+                            return 1;
+                        }
+                    }});
+                log.debug(list);
+                for (String sentence___ : sentenceDetector.sentDetect(input)) {
+                    // https://www.sketchengine.co.uk/penn-treebank-tagset/
+                    String sentence__ = sentence___.replaceAll("[\r\n]", " ");
+                    List<Integer> starts = new ArrayList<>();
+                    List<Integer> ends = new ArrayList<>();
+                    List<String> terms = new ArrayList<>();
+                    List<String> terms_ = new ArrayList<>();
+                    for (String term : list) {
+                        terms.add(new String(term));
                         if (term.contains(" ")) {
                             String term_ = term.replace(" ", "_");
-                            sentence__ = sentence__.replaceAll("(?i)"+term, term_);
+                            sentence__ = sentence__.replaceAll("(?i)" + term, term_);
                             term = term_;
                         }
-                        Tokenizer tokenizer = new TokenizerME(tokenizerModel);
-                        String[] words = tokenizer.tokenize(sentence__);
-                        String[] tags = tagger.tag(words);
-                        
+                        terms_.add(term);
+                    }
+                    if (!sentence__.equals(sentence___)) {
+                        log.trace(sentence__);
+                    }
+                    Tokenizer tokenizer = new TokenizerME(tokenizerModel);
+                    String[] words = tokenizer.tokenize(sentence__);
+                    String[] tags = tagger.tag(words);
+                    for (String term : list) {
+                        if (StringUtils.isBlank(term) || !sentence__.toLowerCase().contains(term.toLowerCase())) {
+                            continue;
+                        }
+
                         StringBuilder sent = new StringBuilder();
-                        for (int i =0; i < words.length; i++) {
+                        for (int i = 0; i < words.length; i++) {
                             sent.append(words[i]);
                             sent.append("_");
                             sent.append(tags[i]);
                             sent.append(" ");
                         }
-                        log.debug("{} >> {}", term, sent.toString().trim());
+                        log.debug(" __ {} __ {}", term, sent.toString().trim());
+                        boolean reject = false;
                         for (int i = 0; i < words.length; i++) {
                             String word = words[i];
-
-                            // 
+                            // if (!tags[i].equals("FW") && !tags[i].contains("NP") ) {
+                            // continue;
+                            // }
+                            // //
                             if (term.equalsIgnoreCase(word)) {
                                 int j = i + 1;
                                 while (true) {
-                                    if (j > words.length -1 || !tags[j].contains("NP") || ArrayUtils.contains(new String[] {"Indian","Indians","empire","Culture","population"}, words[j])) {
-//                                        Ootam Reassertion Period [late Classic] / NNP NNP NNP NNP NNP vs. Ootam [and Hohokam ] trait / NNP NNP NNP SYM NN
-//                                        if (word.equals("Ootam")) {
-//                                            log.debug("{} {} {} {} {}", words[i] , words[i+1],words[i+2],words[i+3],words[i+4]);
-//                                            log.debug("{} {} {} {} {}", tags[i] , tags[i+1],tags[i+2],tags[i+3],tags[i+4]);
-//                                        }
+                                    if (j > words.length - 1) {
+                                        break;
+                                    }
+                                    
+                                    // Pueblo del
+                                    if (words[j].toLowerCase().equals("del") || words[j].toLowerCase().equals("de")) {
+                                        reject = true;
+                                    }
+                                    boolean containsValidSuffix = ArrayUtils.contains(new String[] { "indian", "indians", "empire", "culture", "population","pottery", "ceramics", "vessels", "ceramic", "vessel","sherd","shard" }, words[j].toLowerCase());
+                                    if (!tags[j].contains("NP")
+                                            || containsValidSuffix || Utils.percentNumericCharacters(words[j]) > 1) {
+                                        // Ootam Reassertion Period [late Classic] / NNP NNP NNP NNP NNP vs. Ootam [and Hohokam ] trait / NNP NNP NNP SYM NN
+                                        // if (word.equals("Ootam")) {
+                                        // log.debug("{} {} {} {} {}", words[i] , words[i+1],words[i+2],words[i+3],words[i+4]);
+                                        // log.debug("{} {} {} {} {}", tags[i] , tags[i+1],tags[i+2],tags[i+3],tags[i+4]);
+                                        // }
                                         break;
                                     }
                                     j++;
                                 }
 
                                 int h = i - 1;
+                                // Gila Pueblo
+                                if (i > 0 && tags[h].contains("NP") && words[i].equalsIgnoreCase("pueblo")) {
+                                    reject = true;
+                                }
                                 while (true) {
-                                    if (h < 0 || !tags[h].contains("NP")) {
+                                    // fixme need to catch "classic period Hohokam"
+                                    if (h < 0 || !ArrayUtils.contains(new String[] { "early", "middle", "late", "probably" }, words[h])) {
                                         h++;
                                         break;
                                     }
                                     h--;
                                 }
-                                if (i != j -1) {
+                                if (i != j - 1 || reject) {
                                     continue;
                                 }
-                                StringBuilder sb = new StringBuilder();
-                                for (int x=0; x < words.length; x++) {
-                                    if (x == h) {
-                                        sb.append(" <START:");
-                                        sb.append("culture");
-                                        sb.append("> ");
-                                    }
-                                    if (x == j) {
-                                        sb.append(" <END> ");
-                                    }
-                                    sb.append(" ");
-                                    String str = words[x];
-                                    if (str.equals(word)) {
-                                        sb.append(str.replace("_", " "));
-                                    } else {
-                                        sb.append(str);
-                                    }
-                                }
+                                
+                                
+                                starts.add(h);
+                                ends.add(j);
                                 for (int a = h; a <= j - 1; a++) {
                                     log.debug(" :: {} -> {}", words[a], tags[a]);
                                 }
-                                log.debug(">> " + sb.toString());
                             }
                         }
 
                     }
+                    printNewString(starts, ends, terms, terms_, words);
                 }
                 // DocumentAnalyzer app = new DocumentAnalyzer();
                 // app.run(file.getName(), input, dir);
@@ -174,60 +204,32 @@ public class SentenceStripper {
 
     }
 
-    private static File processFile(File file) throws IOException, InvalidPasswordException {
-        String filename = file.getName();
-        if (FilenameUtils.getExtension(filename).equalsIgnoreCase("pdf")) {
-            String base = FilenameUtils.getBaseName(filename);
-            File parent = new File("tmp");
-            if (!parent.exists()) {
-                parent.mkdirs();
+    private static void printNewString(List<Integer> starts, List<Integer> ends, List<String> terms, List<String> terms_, String[] words) {
+        StringBuilder sb = new StringBuilder();
+        if (CollectionUtils.isEmpty(starts)) {
+            return;
+        }
+        for (int x = 0; x < words.length; x++) {
+            if (starts.contains(x)) {
+                sb.append(" <START:");
+                sb.append(tagName);
+                sb.append(">");
             }
-            PDFTextStripper stripper = new PDFTextStripper();
-            if (html) {
-                stripper = new PDFText2HTML();
-                base += ".html";
+            if (ends.contains(x)) {
+                sb.append(" <END>");
             }
-            File textfile = new File(parent, base + ".txt");
-            if (textfile.exists()) {
-                file = textfile;
+            sb.append(" ");
+            String str = words[x];
+            int indexOf = terms_.indexOf(str);
+            if (indexOf > -1) {
+                sb.append(terms.get(indexOf));
             } else {
-                stripper.setAddMoreFormatting(true);
-                stripper.setPageStart(DocumentAnalyzer.START_PAGE);
-                stripper.setPageEnd(DocumentAnalyzer.END_PAGE);
-                // stripper.set
-                PDDocument pdDoc = PDDocument.load(file, MemoryUsageSetting.setupMixed(Runtime.getRuntime().freeMemory() / 5L));
-                stripper.writeText(pdDoc, new FileWriter(textfile));
-                pdDoc.close();
-                file = textfile;
+                sb.append(str);
             }
         }
-        return file;
+        log.debug(">> " + sb.toString());
     }
 
-    private static File downloadModels() throws MalformedURLException, IOException, FileNotFoundException {
-        List<URL> urls = new ArrayList<URL>();
-        urls.add(new URL(OPENNLP_URL + "en-sent.bin"));
-        urls.add(new URL(OPENNLP_URL + "en-token.bin"));
-        urls.add(new URL(OPENNLP_URL + "en-ner-organization.bin"));
-        urls.add(new URL(OPENNLP_URL + "en-ner-date.bin"));
-        urls.add(new URL(OPENNLP_URL + "en-ner-time.bin"));
-        urls.add(new URL(OPENNLP_URL + "en-ner-person.bin"));
-        urls.add(new URL(OPENNLP_URL + "en-ner-location.bin"));
-        urls.add(new URL(OPENNLP_URL + "en-pos-maxent.bin"));
-        File dir = new File("models");
-        dir.mkdir();
-        for (URL url : urls) {
-            String urlToLoad = StringUtils.substringAfter(url.toString(), OPENNLP_MODEL_VER + "/");
-            File f = new File(dir, urlToLoad);
-            if (!f.exists()) {
 
-                ReadableByteChannel rbc = Channels.newChannel(url.openStream());
-                FileOutputStream fos = new FileOutputStream(f);
-                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                IOUtils.closeQuietly(fos);
-            }
-        }
-        return dir;
-    }
 
 }

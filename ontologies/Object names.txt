@@ -1,0 +1,84 @@
+Abrading Stone
+Anvil
+Arrow Shaft Polisher
+Awl
+	Bone Awl
+Axe
+Ball 
+	Rubber Ball
+	Stone Ball
+Basket
+Bead
+	Shell Bead
+	Stone Bead
+Bone Artifact
+	Bone Awl
+Bowl
+Censer
+	Effigy Censer
+Cigarette
+Chopper
+Cloth
+Comal
+Copper Bell
+Coprolite
+Cordage
+Dice
+Digging Stick
+Dipper (Ladle)
+Drill
+Effigy
+Figurine
+File
+Flute
+Graver
+Hammerstone
+Hoe
+	Stone Hoe
+Jar	
+Knife
+Mano
+Mask
+Matting (Mat)
+Metate
+Mirror
+	Pyrite Mirror
+Mortar
+Mosaic
+Needle
+Ornament
+	Bracelet
+		Shell Bracelet
+	Ear Spool
+	Nose Plug
+	Pendant
+	Ring
+		Shell Ring
+		Stone Ring
+Paddle
+Paint
+Palette
+	Effigy Palette
+Pestle
+Pigment
+Pipe
+Post
+Pot
+Projectile Point
+	Arrow Point
+	Atlatl Point
+Rasp
+Rattle
+Reamer
+Rubbing Stone
+Sandal
+Saw
+Scraper
+Snare
+Spindle Whorl
+Stone Effigy
+Trivet
+Tube
+Urn
+Wax
+Yoke

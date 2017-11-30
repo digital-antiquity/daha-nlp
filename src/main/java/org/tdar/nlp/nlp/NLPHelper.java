@@ -74,7 +74,7 @@ public class NLPHelper {
             return false;
         }
 
-        if (percentNumericCharacters(key) > getMinPercentNumbers()) {
+        if (Utils.percentNumericCharacters(key) > getMinPercentNumbers()) {
             return false;
         }
 
@@ -144,28 +144,6 @@ public class NLPHelper {
         return Utils.toPercent(letterCount, words.length);
     }
 
-    /**
-     * Find the % of characters in a phrase that are numbers (eg. 42 1/22/27 V)
-     * 
-     * @param key
-     * @return
-     */
-    public static int percentNumericCharacters(String key) {
-        int numCount = 0;
-        int totalCount = 0;
-        for (char c : key.toCharArray()) {
-            if (Character.isDigit(c)) {
-                numCount++;
-                totalCount++;
-                continue;
-            }
-            if (Character.isAlphabetic(c)) {
-                totalCount++;
-            }
-        }
-        // log.debug("total: "+ totalCount + " num:" + numCount);
-        return Utils.toPercent(numCount, totalCount);
-    }
 
 
     /**

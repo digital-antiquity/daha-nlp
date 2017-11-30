@@ -37,6 +37,7 @@ public class OpenNLPTrain {
         train("en-ner-citation.bin", "citation", "cite.train");
         train("en-ner-site.bin", "site", "site.train");
         train("en-ner-culture.bin", "culture", "culture.train");
+        train("en-ner-ceramic.bin", "ceramic", "ceramic.train");
         train("en-ner-customperson.bin", "person", "person.train");
         train("en-ner-customorganization.bin", "organization", "organization.train");
         train("en-ner-customlocation.bin", "location", "location.train");

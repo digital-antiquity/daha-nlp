@@ -67,6 +67,7 @@ public class DocumentAnalyzer {
         TokenNameFinderModel modelCitation = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-citation.bin")));
         TokenNameFinderModel modelSitename = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-site.bin")));
         TokenNameFinderModel modelCulture = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-culture.bin")));
+        TokenNameFinderModel modelCeramic = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-ceramic.bin")));
         TokenNameFinderModel modelPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-person.bin")));
         TokenNameFinderModel modelDate = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-date.bin")));
         TokenNameFinderModel modelCustomPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-customperson.bin")));
@@ -94,6 +95,7 @@ public class DocumentAnalyzer {
         
         NLPHelper site = new NLPHelper("site", modelSitename);
         NLPHelper culture = new NLPHelper("culture", modelCulture);
+        NLPHelper ceramic = new NLPHelper("ceramic", modelCeramic);
         site.setBoostValues(Arrays.asList("site","ruin","excavation"));
         NLPHelper cite = new NLPHelper("citation", modelCitation);
         cite.setRegexBoost(".+\\d++.*");
@@ -131,6 +133,7 @@ public class DocumentAnalyzer {
             doc.getHelpers().add(site);
         }
         doc.getHelpers().add(date);
+        doc.getHelpers().add(ceramic);
         NlpPage page = new NlpPage(pageNum);
         List<String> cultures = new ArrayList<>();
         Pattern testPattern = Pattern.compile("("+StringUtils.join(cultures,"|")+")");
@@ -143,19 +146,6 @@ public class DocumentAnalyzer {
 
         RegexNameFinder finder =         new RegexNameFinder(regexMap);
         
-        // as we get better here, for performance, this could be moved up into the cached text above
-        List<String[]> pairs = new ArrayList<>();
-        pairs.add(new String[] {" o f ", " of "});
-        pairs.add(new String[] {" w ith", " with"});
-        pairs.add(new String[] {"I f ", "If "});
-//        pairs.add(new String[] {"F loor ", "Floor "});
-        pairs.add(new String[] {" i f ", " if "});
-        pairs.add(new String[] {"m idd", "midd" });
-        pairs.add(new String[] {"M idd","Midd" });
-        pairs.add(new String[] {"prim ar","primar" });
-        pairs.add(new String[] {"tem poral","temporal" });
-        pairs.add(new String[] {" m ode"," mode" });
-        pairs.add(new String[] {" M ode"," Mode" });
         boolean seenApachePagemarker = false;
         
         String sentence = "";
@@ -169,13 +159,7 @@ public class DocumentAnalyzer {
             
             for (String sentence_ : sentence__.split("(\n|\r\n)++")) {
                 sentence = sentence_;
-                for (String[] pair : pairs) {
-                    sentence = StringUtils.replace(sentence, pair[0],pair[1]);
-                }
 
-                if (sentence.indexOf(" ") == 1 && (sentence.indexOf("A") != 0) && sentence.indexOf("I") != 0) {
-                    sentence = StringUtils.replaceOnce(sentence, " ", "");
-                }
                 log.trace("::" + sentence);
                 if (sentence.contains(END_PAGE) || (seenApachePagemarker == false && sentence.contains("     ----------------------------------------------------------------------"))) {
                     sentence = addPage(doc, page, sentence);
@@ -267,6 +251,7 @@ public class DocumentAnalyzer {
             if (span.getStart() > 0) {
                 prev = tokens[span.getStart() - 1];
             }
+
             for (String match : helper.getSkipPreviousTerms()) {
                 if (match.equalsIgnoreCase(prev)) {
                     log.trace("skipping: " + prev + " " + name);

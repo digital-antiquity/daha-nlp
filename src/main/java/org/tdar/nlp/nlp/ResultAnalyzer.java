@@ -42,16 +42,13 @@ public class ResultAnalyzer {
             return;
         }
         for (String key : map.keySet()) {
-            TermWrapper wrap = ocur.get(key);
             TermWrapper wrap_ = map.get(key);
+            TermWrapper wrap = ocur.getOrDefault(key.toLowerCase(),wrap_);
             
-            if (wrap == null) {
-                wrap = wrap_;
-            } else {
+            if (!wrap.equals(wrap_)) {
                 wrap.combine(wrap_);
             }
-            log.trace("{} --> {}", key, wrap);
-            ocur.put(key, wrap);
+            ocur.put(key.toLowerCase(), wrap);
         }
     }
 
@@ -80,25 +77,6 @@ public class ResultAnalyzer {
         if (ocur.size() > 0) {
             avg = avg / ocur.size();
         }
-
-//        WordOverlapAnalyzer multi = new WordOverlapAnalyzer(multiWord.keySet());
-//        Map<String, List<String>> analyze = multi.analyze(multiWord.keySet());
-//        for (Entry<String, List<String>> entry : analyze.entrySet()) {
-//            TermWrapper keyWrapper = multiWord.get(entry.getKey());
-//            for (String val : entry.getValue()) {
-//                TermWrapper vw = multiWord.get(val);
-//                vw.setTerm(val);
-//                keyWrapper.combine(vw);
-//                multiWord.remove(val);
-//                // log.debug("\t--" + val + " --> " + keyWrapper.getTerm());
-//            }
-//        }
-
-//        if (PERSON.equals(type)) {
-//            PersonalNameOverwrapAnalyzer overlap = new PersonalNameOverwrapAnalyzer();
-//            overlap.combineMultiWordOverlap(multiWord);
-//        }
-
         Map<Integer, List<String>> reverse = new HashMap<>();
         int weightedAvg = sortByOccurrence(multiWord, reverse);
 
@@ -117,11 +95,9 @@ public class ResultAnalyzer {
                 if (StringUtils.isNotBlank(type)) {
                     header += " ";
                 }
-                if (key > avg) {
+                if (key > avg || list.size() < 20) {
                         log.debug(header + key + " | " + val);
                         results.put(val, key);
-                } else {
-                    // log.debug(header + "| " + val);
                 }
             }
         }
