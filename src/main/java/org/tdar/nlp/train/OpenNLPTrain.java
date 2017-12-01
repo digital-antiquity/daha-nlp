@@ -1,4 +1,4 @@
-package org.tdar.nlp.nlp;
+package org.tdar.nlp.train;
 
 import java.io.BufferedOutputStream;
 import java.io.FileInputStream;

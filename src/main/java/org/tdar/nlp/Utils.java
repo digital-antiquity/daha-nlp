@@ -51,4 +51,8 @@ public class Utils {
         return Utils.toPercent(numCount, totalCount);
     }
 
+    public static boolean isPunctuation(String firstLetter) {
+        return firstLetter.matches("["+PUNCTUATION+"]");
+    }
+
 }

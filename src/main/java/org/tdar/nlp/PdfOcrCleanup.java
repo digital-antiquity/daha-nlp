@@ -82,6 +82,8 @@ public class PdfOcrCleanup {
         pairs.add(new String[] { " I f ", "If " });
         pairs.add(new String[] { " F loor ", "Floor " });
         pairs.add(new String[] { " i f ", " if " });
+        pairs.add(new String[] { " L ind", " Lind" });
+        pairs.add(new String[] { "ava­ tio", "ava­tio" });
         pairs.add(new String[] { " m idd", " midd" });
         pairs.add(new String[] { "prim ar", "primar" });
         pairs.add(new String[] { "tem poral", "temporal" });
