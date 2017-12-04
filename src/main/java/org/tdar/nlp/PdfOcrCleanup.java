@@ -111,6 +111,7 @@ public class PdfOcrCleanup {
         pairs.add(new String[] { "dm ark", "dmark" });
         pairs.add(new String[] { "sm an", "sm an" });
         pairs.add(new String[] { "nw are", "nwware" });
+        pairs.add(new String[] { "ari­ abi", "ari­abi" });
         pairs.add(new String[] { " com bin", " combin" });
         pairs.add(new String[] { "com pli", "compli" });
         pairs.add(new String[] { "com pa", "compa" });

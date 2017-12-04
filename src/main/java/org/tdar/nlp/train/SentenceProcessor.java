@@ -32,8 +32,9 @@ public class SentenceProcessor {
         this.vocabularyList = list;
     }
 
-    public String processSentence(String sentence___) {
+    public SentenceResult processSentence(String sentence___) {
         String sentence__ = sentence___.replaceAll("[\r\n]", " ");
+        sentence__ = Utils.replaceSmartQuotes(sentence__);
         List<Integer> starts = new ArrayList<>();
         List<Integer> ends = new ArrayList<>();
         List<String> terms = new ArrayList<>();
@@ -55,9 +56,10 @@ public class SentenceProcessor {
         Tokenizer tokenizer = new TokenizerME(tokenizerModel);
         String[] words = tokenizer.tokenize(sentence__);
         String[] tags = tagger.tag(words);
-        log.debug("matching terms in sentence: {}", terms);
+        log.trace("matching terms in sentence: {}", terms);
+        SentenceResult result = new SentenceResult();
         for (String term : terms_) {
-            log.debug(term);
+            log.trace(term);
             if (StringUtils.isBlank(term) || !StringUtils.containsIgnoreCase(sentence__, term)) {
                 continue;
             }
@@ -69,7 +71,8 @@ public class SentenceProcessor {
                 sent.append(tags[i]);
                 sent.append(" ");
             }
-            log.debug(" __ {} __ {}", term, sent.toString().trim());
+            log.trace(" __ {} __ {}", term, sent.toString().trim());
+            result.setTaggedSentence(sent.toString().trim());
             boolean reject = false;
             for (int i = 0; i < words.length; i++) {
                 String word = words[i];
@@ -81,26 +84,27 @@ public class SentenceProcessor {
                     int j = i + 1;
                     while (true) {
                         if (j > words.length - 1) {
-                            log.debug("skipped because at end");
+                            log.trace("skipped because at end");
                             break;
                         }
 
                         // Pueblo del
                         String nextWord = words[j];
+                        log.trace(nextWord);
                         if (nextWord.toLowerCase().equals("del") || nextWord.toLowerCase().equals("de") || nextWord.toLowerCase().contains("wall")) {
                             reject = true;
                         }
                         boolean containsValidSuffix = ArrayUtils.contains(new String[] { "indian", "indians", "empire", "culture", "population",
                                 "pottery", "ceramics", "vessels", "ceramic", "vessel", "sherd", "shard", "period", "Period","age" }, nextWord.toLowerCase());
                         String nextTag = tags[j];
-                        if (!nextTag.contains("NP") && !nextTag.contains("NN") 
-                                || containsValidSuffix || Utils.percentNumericCharacters(nextWord) > 1) {
-                            log.debug("stopped because next not noun [{}, {}]", nextWord, nextTag);
-                            // Ootam Reassertion Period [late Classic] / NNP NNP NNP NNP NNP vs. Ootam [and Hohokam ] trait / NNP NNP NNP SYM NN
-                            // if (word.equals("Ootam")) {
-                            // log.debug("{} {} {} {} {}", words[i] , words[i+1],words[i+2],words[i+3],words[i+4]);
-                            // log.debug("{} {} {} {} {}", tags[i] , tags[i+1],tags[i+2],tags[i+3],tags[i+4]);
-                            // }
+                        
+                        if (containsValidSuffix || Utils.percentNumericCharacters(nextWord) > 1) {
+                            log.trace("stopped because valid suffix / numeric [{}, {}]", nextWord, nextTag);
+                            break;
+                        }
+                        
+                        if (!nextTag.contains("NP") && !nextTag.contains("NN")) {
+                            log.trace("stopped because next word is not noun [{}, {}]", nextWord, nextTag);
                             break;
                         }
                         j++;
@@ -119,14 +123,30 @@ public class SentenceProcessor {
                         }
                         if (previousTag.equals("IN") || words[i].equalsIgnoreCase("pueblo") && termIsProperNoun(previousTag, previousWord)) {
                             reject = true;
-                            log.debug("rejected because word is pueblo or previous word is a prepopsition ");
-
+                            log.trace("rejected because word is pueblo or previous word is a prepopsition ");
                             break;
                         }
+                        
+                        if (previousWord.equalsIgnoreCase("no") || previousWord.equalsIgnoreCase("not")) {
+                            reject = true;
+                            log.trace("rejected because negation");
+                            break;
+                        }
+
+                        boolean containsTableTerm = ArrayUtils.contains(new String[] { "context","total", "type","class","sequence","comments" }, previousWord.toLowerCase());
+
+                        if (containsTableTerm) {
+                            reject = true;
+                            log.trace("rejected because likely table");
+                            break;
+                        }
+                        
+                        boolean containsPrepositionOrThe = ArrayUtils.contains(new String[] {"at","from","the","ofthe","in", "of", "map","collections"}, previousWord.toLowerCase());
                         // fixme need to catch "classic period Hohokam"
                         if ((!ArrayUtils.contains(new String[] { "early", "middle", "late", "probably" }, previousWord) && !termIsProperNoun(previousTag, previousWord))
-                                || StringUtils.isNumeric(previousWord.trim())) {
-                            log.debug("stopped previous word is not early/late/etc and not proper noun");
+                                || containsPrepositionOrThe || StringUtils.containsAny(previousWord, new char[]{':','='})
+                                || Utils.percentNumericCharacters(previousWord) > 0 || previousWord.length() < 2) {
+                            log.trace("stopped previous word is not early/late/etc and not proper noun [{} , {}]", previousWord, previousTag);
                             h++;
                             break;
                         }
@@ -136,21 +156,25 @@ public class SentenceProcessor {
                         }
                         h--;
                     }
-                    log.debug("{} ... {} [{}]", words[h], words[j], reject);
+//                    log.trace("{} ... {} [{}]", words[h], words[j], reject);
                     if (i != j - 1 || reject) {
                         continue;
                     }
 
                     starts.add(h);
                     ends.add(j);
+                    String out = "";
                     for (int a = h; a <= j - 1; a++) {
-                        log.debug(" :: {} -> {}", words[a], tags[a]);
+                        out += words[a] + " ";
+                        log.trace(" :: {} -> {}", words[a], tags[a]);
                     }
+                    result.getTags().add(out.trim().replace("_", " "));
                 }
             }
 
         }
-        return printNewString(starts, ends, terms, terms_, words, tagName);
+        result.setSentence(printNewString(starts, ends, terms, terms_, words, tagName));
+        return result;
     }
 
     private boolean termIsProperNoun(String previousTag, String previousWord) {

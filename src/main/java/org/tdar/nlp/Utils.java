@@ -6,6 +6,13 @@ public class Utils {
     public static int toPercent(int numCount, int totalCount) {
         return (int) (((float) numCount / (float) totalCount) * 100);
     }
+    
+    public static String replaceSmartQuotes(String str) {
+        // See http://www.microsoft.com/typography/unicode/1252.htm
+        String str_ = str.replaceAll("[\u0091\u0092\u2018\u2019]", "\'");
+        str_ = str_.replaceAll("[\u0093\u0094\u201c\u201d]", "\"");
+        return str_;
+    }
 
     /**
      * Cleans text: Strips newlines and tags

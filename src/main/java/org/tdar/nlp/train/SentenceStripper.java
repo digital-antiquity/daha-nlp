@@ -3,7 +3,9 @@ package org.tdar.nlp.train;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -36,9 +38,9 @@ public class SentenceStripper {
         if (filename == null) {
             // Hohokam
             filename = "/Users/abrin/Dropbox (ASU)/PDFA-Analysis/lc4-abbyy12-pdfa.pdf";
-             filename = "/Users/abrin/Downloads/ABDAHA/Kelly-et-al-2010_OCR_PDFA.pdf";
-             filename = "/Users/abrin/Downloads/ABDAHA/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
-            // filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
+//             filename = "/Users/abrin/Downloads/ABDAHA/Kelly-et-al-2010_OCR_PDFA.pdf";
+//             filename = "/Users/abrin/Downloads/ABDAHA/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
+//             filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
             // filename = "tmp/Underfleet1.html.txt";
         }
 
@@ -66,25 +68,32 @@ public class SentenceStripper {
                 TokenizerModel tokenizerModel = new TokenizerModel(new FileInputStream(new File(dir, "en-token.bin")));
 //                types = IOUtils.toString(new FileInputStream("ontologies/Cultures_flattened.txt"));
 
-                VocabList list = new VocabList(new FileInputStream("ontologies/Cultures_flattened.txt"));
+//                VocabList list = new VocabList(new FileInputStream("ontologies/Cultures_flattened.txt"));
+//                VocabList list = new VocabList(new FileInputStream("ontologies/CeramicType_Wares.txt"));
+                VocabList list = new VocabList(new FileInputStream("ontologies/Site_ProjectNames_flattened.txt"));
+                Set<String> uniqueTags = new HashSet<>();
                 log.debug("\n#######\n#######  FILE: {}", file.getName());
                 log.debug("#######  terms: {}\n#######\n", list.getList());
                 SentenceProcessor sp = new SentenceProcessor(tokenizerModel, tagger, tagName, list.getList());
                 for (String sentence___ : sentenceDetector.sentDetect(input)) {
                     // https://www.sketchengine.co.uk/penn-treebank-tagset/
-                    String result = sp.processSentence(sentence___);
-                    if (result != null) {
-                        log.debug("## {}" , result);
+                    SentenceResult result = sp.processSentence(sentence___);
+                    uniqueTags.addAll(result.getTags());
+                    if (!result.getTags().isEmpty()) {
+                        log.debug(" {} __ {}", result.getTags(), result.getTaggedSentence());
+                    }
+                    if (result.getSentence() != null) {
+                        log.debug("## {}" , result.getSentence());
                     }
                 }
 
                 // DocumentAnalyzer app = new DocumentAnalyzer();
                 // app.run(file.getName(), input, dir);
+                log.debug("#### UniqueTags: {}", uniqueTags);
             } catch (Exception e) {
                 log.error("{}", e, e);
             }
         }
-
     }
 
 

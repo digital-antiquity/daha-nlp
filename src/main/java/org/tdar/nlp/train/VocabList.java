@@ -13,6 +13,7 @@ import java.util.TreeSet;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.atlas.logging.Log;
+import org.tdar.nlp.Utils;
 
 public class VocabList {
 
@@ -27,9 +28,14 @@ public class VocabList {
         
         List<String> toAdd = new ArrayList<>();
         // handle "period" which can be both cases
+        
         for (String entry : list) {
-            if (entry.toLowerCase().contains("period")) {
-                toAdd.add(StringUtils.replace(entry, "Period", "period"));
+            String t_ = Utils.replaceSmartQuotes(entry);
+            if (!entry.equals(t_)) {
+                toAdd.add(t_);
+            }
+            if (t_.toLowerCase().contains("period")) {
+                toAdd.add(StringUtils.replace(t_, "Period", "period"));
             }
         }
         list.addAll(toAdd);
@@ -42,6 +48,8 @@ public class VocabList {
             }
         }
     }
+    
+    
 
     public SortedSet<String> getList() {
         return list;
