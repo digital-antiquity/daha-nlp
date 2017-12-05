@@ -123,6 +123,7 @@ public class NlpDocument {
         int bib = -1;
         int below = 0;
         int bibPoint = pages.size() - pages.size() / 4;
+        int declaredBib = -1;
         if (bibPoint != pages.size()) {
             for (int i = bibPoint - 1; i < pages.size(); i++) {
                 Integer num = pages.get(i).getTotalReferences().get(NlpPage.ALL);
@@ -140,8 +141,18 @@ public class NlpDocument {
                     below = 0;
                     bib = -1;
                 }
+                
+                if (pages.get(i).isBibliography()) {
+                    bib = i;
+                    declaredBib = i;
+                }
             }
         }
+        
+        if (bib == -1 && declaredBib > 0) {
+            bib = declaredBib;
+        }
+        
         log.debug("BibStart:" + bib + " avg:" + avg);
         if (bib == -1) {
             return;

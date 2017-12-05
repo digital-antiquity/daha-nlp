@@ -99,14 +99,16 @@ public class DocumentAnalyzer {
         site.setBoostValues(Arrays.asList("site","ruin","excavation"));
         NLPHelper cite = new NLPHelper("citation", modelCitation);
         cite.setRegexBoost(".+\\d++.*");
+        
         NLPHelper institution = new NLPHelper("institution", modelCustomOrganization, modelOrganization);
         institution.setBoostValues(
                 Arrays.asList("inc.", "co.", "university", "college", "museum", "company", "llc", "ltd", " of ", "office", "services", "society"));
         person.setMinTermLength(4);
         // matching initials
-        person.setRegexBoost("(.+\\s\\w\\.\\s.+|\\w\\.\\s\\.+)");
+//        person.setRegexBoost("(.+\\s\\w\\.\\s.+|\\w\\.\\s\\.+)");
         person.setBoostValues(Arrays.asList("dr.", "mr.", "mrs."));
         person.setMinPercentNumberWords(2);
+        person.setTermIgnore(Arrays.asList("mesa"));
         person.setSkipPreviousTerms(Arrays.asList("of", "in", "the"));
         NLPHelper location = new NLPHelper("location", modelCustomLocation, modelLocation);
         location.setBoostValues(Arrays.asList("valley", "mountain", "state", "country", "county", "city", "town", "base",

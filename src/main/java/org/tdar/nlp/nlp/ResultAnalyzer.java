@@ -95,7 +95,7 @@ public class ResultAnalyzer {
                 if (StringUtils.isNotBlank(type)) {
                     header += " ";
                 }
-                if (key > avg || list.size() < 20) {
+                if ((key > avg || list.size() < 20) && key > 0) {
                         log.debug(header + key + " | " + val);
                         results.put(val, key);
                 }

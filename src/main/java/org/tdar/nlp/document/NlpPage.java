@@ -56,6 +56,7 @@ public class NlpPage {
     Map<String, Integer> totals;
     private List<SpanWrapper> spans = new ArrayList<>();
     private List<String> sentences = new ArrayList<>();
+    private boolean bibliography;
 
     public Map<String, Integer> getTotalReferences() {
         if (totals != null) {
@@ -78,6 +79,11 @@ public class NlpPage {
 
     public void addSentence(String sentence) {
         addTocRank(sentence);
+        if (getSentences().isEmpty()) {
+            if (sentence.toLowerCase().contains("bibliography") || sentence.toLowerCase().contains("references cited")) {
+                setBibliography(true);
+            }
+        }
         getSentences().add(sentence);
         reconcileSpans();
 
@@ -193,5 +199,13 @@ public class NlpPage {
 
     public List<String> getSentences() {
         return sentences ;
+    }
+
+    public boolean isBibliography() {
+        return bibliography;
+    }
+
+    public void setBibliography(boolean bibliography) {
+        this.bibliography = bibliography;
     }
 }

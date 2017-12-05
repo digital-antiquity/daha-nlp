@@ -1,3 +1,237 @@
+David R. Abbott
+Neal W. Ackerly
+D. P. Adams
+Karen Adams
+Lerry D.  Agenbroad
+Richard V. M. Ahlstrom
+Jeffrey H. Altschul
+J. Richard Ambler
+Charles Amsden
+K. M. Anderson
+J. M. Andresen
+Ernst Anteves
+John M. Antieau
+James E. Ayres
+Donald M. Bahr
+Frank Bayham
+James M. Bayman
+Ralph Beals
+W. H. Bell
+B. Benham
+Kenneth Bennett
+Mary Bernard-Shaw
+Julio Betancourt
+M. H. Bilsbarrow
+Walter H. Birkby
+R. I. Birnie
+Vorsilla L. Bohrer
+Todd W. Bostwick
+B. Bradley
+Donald D.  Brand
+Beatriz  Braniff
+Cory Dale Breternitz
+David A. Breternitz
+S. A. Brew
+G. Bronitsky
+D. Brooks
+David E. Brown
+J. L. Brown
+P. E. Brown
+Simon J. Bruder
+Judy L. Bruson-Hadley
+Kirk Bryan
+William R. Bullard
+John S. Cable
+Veletta Canouts
+E. F. Castetteter
+Mark L. Chenault
+R. G. Chenhall
+Richard S. Ciolek-Torrello
+C. P. Clark
+Jeffrey Clark
+J. B. Clonts
+C. A. Coe
+Harold S. Colton
+Douglas B. Craig
+Patricia L. Crown
+Byron Cummings
+Frank Hamilton Cushing
+John S. Czaplicki
+ALlen Dart
+Jeffrey S. Dean
+William Deaver
+Sharon Debowski
+Charles C. Di Peso
+Alfred E. Dittert
+D. P. Doak
+William H. Doelle
+W. E. Doolittle
+D. S. Dosh
+Donald E. Dove
+Christian E. Downum
+David E. Doyel
+R. W. Effland
+Paul H. Ezell
+Alan Ferg
+Jesse Walter Fewkes
+Paul R. Fish
+Suzanne K. Fish
+Bernard L. Fontana
+Michael S. Foster
+Hayward Hoskins Franklin
+Clara Lee  Frapps
+Clara Lee Tanner
+Paul S. Frick
+G. L. Fritz
+S. L. Fuller
+Robert E. Gasser
+A. George
+Jannifer W. Gish
+Harold S. Gladwin
+Nora Gladwin
+Winifred Gladwin
+R. Goddard
+Albert C. Goodyear
+G. J. Gordon
+Mark A. Grady
+Donald A. Graybill
+Paul Grebinger
+Marjorie Green
+J. Cameron Greenleaf
+David H. Greenwald
+Linda M. Gregonis
+David A. Gregory
+George J. Gumerman
+Mark R. Hackbarth
+Odd S. Halseth
+Laurens C. Hammack
+Karen G. Harry
+Gayle H. Hartmann
+Emil W. Haury
+Julian D. Hayden
+J. Heidke
+T. Kathleen Henderson
+M. L. Heuett
+Frederick W.  Hodge
+C. M. Hoffman
+James P. Holmlund
+J. A. Homburg
+Ann Valdo Howard
+Jerry B. Howard
+Bruce B. Huckell
+Gary Huckleberry
+Ellsworth Huntington
+Frederick W. Huntington
+David Jacobs
+Alfred E. Johnson
+J. T. Jones
+Isabel T. Kelly
+J. Charles  Kelly
+Sandra Kemrer
+Alfred V. Kidder
+G. M. Kinkade
+JoAnne E. Kisselberg
+Scott M. Kwiatkowski
+Richard C. Lange
+Owen Lindauer
+J. M. Lindly
+Charles H. Lowe
+Jonathan B. Mabry
+B. S. MacNider
+John H. Madsen
+William S. Marmaduke
+Paul S. Martin
+Bruce W. Masse
+Jon Mayberry
+L. S. Mayro
+Martin McAllister
+Randall H. McGuire
+Thomas R. McGuire
+Frank Midvale
+Elizabeth Miksa
+Charles H. Miksicek
+Douglas R. Mitchell
+Donald H. Morris
+D. Mullon
+Jill E. Neitzel
+Fred L. Nials
+Linda Nicholas
+W. Palm
+Jane D. Peterson
+David A Phillips
+Peter J. Pilles
+Fred Plog
+L. Mark Raab
+A. G. Rankin
+John C. Ravesloot
+A. Reiger
+Glen E. Rice
+James B. Rodgers
+Malcolm J. Rogers
+Raymond N. Rogers
+Bettina H. Rosenberg
+E. Jane Rosenthal
+Barbara J. Roth
+K. Rozen
+Reynold J. Ruppe
+Frank H. Russell
+Edwin B. Sayles
+Fredrick H. Scantling
+David M. Schaller
+Michael B. Schiffer
+James Schoenwetter
+Albert H. Schroeder
+D. H. Scovill
+Deni J. Seymour
+M. Steven Shackley
+D. L Shaul
+Lynn O. Shenk
+Don E. Simonis
+Earl W. Sires
+Mark C. Slaughter
+L. V. Slawson
+Leslie Spier
+V. K. P. Stacy
+Charles R. Steen
+P. H. Stein
+Charles Sternberg
+Yvonne Stewart
+Lyle M. Stone
+M. Stubing
+Alan P. Sullivan
+D. L. Swartz
+Christine Szuter
+Lynn S. Teague
+S. M. Troncone
+Omar A. Turney
+Ruth M. Underhill
+Steadman Upham
+Sharon F. Urban
+S Van Keuren
+R. Gwinn Vivian
+L. Vogler
+Arthur W. Vokes
+Henry D. Wallace
+Mary-Ellen Walsh-Anduze
+Albert E. Ward
+William W. Wasley
+Michael R. Waters
+Donald E. Weaver
+Carol S. Weed
+K. D. Wellman
+D. A. Westfall
+Norman M. Whalen
+David R. Wilcox
+Ric Windmiller
+Arnold M. Withers
+J. Scott Wood
+Richard B. Woodbury
+T. E. Wright
+Ralph W.G. Wyckoff
+R. K. Yablon
+T. D. Yoder
+Jack L. Zahniser
+Mark Zyniecki
 Abbott, David R.
 Ackerly, Neal W.
 Adams, D. P.
@@ -79,7 +313,8 @@ Fish, Suzanne K.
 Fontana, Bernard L.
 Foster, Michael S.
 Franklin, Hayward Hoskins
-Frapps, Clara Lee (Tanner, Clara Lee)
+Frapps, Clara Lee 
+Tanner, Clara Lee
 Frick, Paul S.
 Fritz, G. L.
 Fuller, S. L.
@@ -203,6 +438,7 @@ Szuter, Christine
 Teague, Lynn S.
 Troncone, S. M.
 Turney, Omar A.
+Sophia E. Kelly
 Underhill, Ruth M.
 Upham, Steadman
 Urban, Sharon F.
@@ -229,6 +465,8 @@ Wright, T. E.
 Wyckoff, Ralph W.G.
 Yablon, R. K.
 Yoder, T. D.
-
 Zahniser, Jack L.
 Zyniecki, Mark
+Gordon Moore
+Christopher Watkins
+Caitlin Wichlacz

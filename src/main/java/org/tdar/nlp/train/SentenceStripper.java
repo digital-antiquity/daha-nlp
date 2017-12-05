@@ -38,9 +38,9 @@ public class SentenceStripper {
         if (filename == null) {
             // Hohokam
             filename = "/Users/abrin/Dropbox (ASU)/PDFA-Analysis/lc4-abbyy12-pdfa.pdf";
-//             filename = "/Users/abrin/Downloads/ABDAHA/Kelly-et-al-2010_OCR_PDFA.pdf";
-//             filename = "/Users/abrin/Downloads/ABDAHA/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
-//             filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
+            filename = "/Users/abrin/Downloads/ABDAHA/Kelly-et-al-2010_OCR_PDFA.pdf";
+            // filename = "/Users/abrin/Downloads/ABDAHA/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
+            // filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
             // filename = "tmp/Underfleet1.html.txt";
         }
 
@@ -66,107 +66,109 @@ public class SentenceStripper {
                 POSModel posModel = new POSModel(new File(dir, "en-pos-maxent.bin"));
                 POSTaggerME tagger = new POSTaggerME(posModel);
                 TokenizerModel tokenizerModel = new TokenizerModel(new FileInputStream(new File(dir, "en-token.bin")));
-//                types = IOUtils.toString(new FileInputStream("ontologies/Cultures_flattened.txt"));
+                // types = IOUtils.toString(new FileInputStream("ontologies/Cultures_flattened.txt"));
 
-//                VocabList list = new VocabList(new FileInputStream("ontologies/Cultures_flattened.txt"));
-//                VocabList list = new VocabList(new FileInputStream("ontologies/CeramicType_Wares.txt"));
-                VocabList list = new VocabList(new FileInputStream("ontologies/Site_ProjectNames_flattened.txt"));
+                // VocabList list = new VocabList(new FileInputStream("ontologies/Cultures_flattened.txt"));
+                // VocabList list = new VocabList(new FileInputStream("ontologies/CeramicType_Wares.txt"));
+                VocabList list = new VocabList(new FileInputStream("ontologies/People.txt"));
                 Set<String> uniqueTags = new HashSet<>();
                 log.debug("\n#######\n#######  FILE: {}", file.getName());
-                log.debug("#######  terms: {}\n#######\n", list.getList());
+                log.debug("\n#######  terms: {}\n#######\n####", list.getList());
                 SentenceProcessor sp = new SentenceProcessor(tokenizerModel, tagger, tagName, list.getList());
                 for (String sentence___ : sentenceDetector.sentDetect(input)) {
-                    // https://www.sketchengine.co.uk/penn-treebank-tagset/
-                    SentenceResult result = sp.processSentence(sentence___);
-                    uniqueTags.addAll(result.getTags());
-                    if (!result.getTags().isEmpty()) {
-                        log.debug(" {} __ {}", result.getTags(), result.getTaggedSentence());
-                    }
-                    if (result.getSentence() != null) {
-                        log.debug("## {}" , result.getSentence());
+                    for (String sentence____ : sentence___.split("(\n|\r\n)++")) {
+
+                        // https://www.sketchengine.co.uk/penn-treebank-tagset/
+                        SentenceResult result = sp.processSentence(sentence____);
+                        uniqueTags.addAll(result.getTags());
+                        if (!result.getTags().isEmpty()) {
+                            log.debug(" {} __ {}", result.getTags(), result.getTaggedSentence());
+                        }
+                        if (result.getSentence() != null) {
+                            log.debug("## {}", result.getSentence());
+                        }
                     }
                 }
 
                 // DocumentAnalyzer app = new DocumentAnalyzer();
                 // app.run(file.getName(), input, dir);
-                log.debug("#### UniqueTags: {}", uniqueTags);
+                log.debug("\n#### UniqueTags: {}", uniqueTags);
             } catch (Exception e) {
                 log.error("{}", e, e);
             }
         }
     }
 
-
-        /**
-         * PARTS OF SPEECH LOGIC FROM https://www.sketchengine.co.uk/penn-treebank-tagset/
-         * 
-         * POS Tag Description Example
-         * CC coordinating conjunction and
-         * CD cardinal number 1, third
-         * DT determiner the
-         * EX existential there there is
-         * FW foreign word d’hoevre
-         * IN preposition, subordinating conjunction in, of, like
-         * IN/that that as subordinator that
-         * JJ adjective green
-         * JJR adjective, comparative greener
-         * JJS adjective, superlative greenest
-         * LS list marker 1)
-         * MD modal could, will
-         * NN noun, singular or mass table
-         * NNS noun plural tables
-         * NP proper noun, singular John
-         * NPS proper noun, plural Vikings
-         * PDT predeterminer both the boys
-         * POS possessive ending friend’s
-         * PP personal pronoun I, he, it
-         * PP$ possessive pronoun my, his
-         * RB adverb however, usually, naturally, here, good
-         * RBR adverb, comparative better
-         * RBS adverb, superlative best
-         * RP particle give up
-         * SENT Sentence-break punctuation . ! ?
-         * SYM Symbol / [ = *
-         * TO infinitive ‘to’ togo
-         * UH interjection uhhuhhuhh
-         * VB verb be, base form be
-         * VBD verb be, past tense was, were
-         * VBG verb be, gerund/present participle being
-         * VBN verb be, past participle been
-         * VBP verb be, sing. present, non-3d am, are
-         * VBZ verb be, 3rd person sing. present is
-         * VH verb have, base form have
-         * VHD verb have, past tense had
-         * VHG verb have, gerund/present participle having
-         * VHN verb have, past participle had
-         * VHP verb have, sing. present, non-3d have
-         * VHZ verb have, 3rd person sing. present has
-         * VV verb, base form take
-         * VVD verb, past tense took
-         * VVG verb, gerund/present participle taking
-         * VVN verb, past participle taken
-         * VVP verb, sing. present, non-3d take
-         * VVZ verb, 3rd person sing. present takes
-         * WDT wh-determiner which
-         * WP wh-pronoun who, what
-         * WP$ possessive wh-pronoun whose
-         * WRB wh-abverb where, when
-         * # # #
-         * $ $ $
-         * “ Quotation marks ‘ “
-         * `` Opening quotation marks ‘ “
-         * ( Opening brackets ( {
-         * ) Closing brackets ) }
-         * , Comma ,
-         * : Punctuation – ; : — …
-         * Main differences to default Penn tagset
-         * In TreeTagger tool
-         * 
-         * Distinguishes be (VB) and have (VH) from other (non-modal) verbs (VV)
-         * For proper nouns, NNP and NNPS have become NP and NPS
-         * SENT for end-of-sentence punctuation (other punctuation tags may also differ)
-         * 
-         * 
-         */
+    /**
+     * PARTS OF SPEECH LOGIC FROM https://www.sketchengine.co.uk/penn-treebank-tagset/
+     * 
+     * POS Tag Description Example
+     * CC coordinating conjunction and
+     * CD cardinal number 1, third
+     * DT determiner the
+     * EX existential there there is
+     * FW foreign word d’hoevre
+     * IN preposition, subordinating conjunction in, of, like
+     * IN/that that as subordinator that
+     * JJ adjective green
+     * JJR adjective, comparative greener
+     * JJS adjective, superlative greenest
+     * LS list marker 1)
+     * MD modal could, will
+     * NN noun, singular or mass table
+     * NNS noun plural tables
+     * NP proper noun, singular John
+     * NPS proper noun, plural Vikings
+     * PDT predeterminer both the boys
+     * POS possessive ending friend’s
+     * PP personal pronoun I, he, it
+     * PP$ possessive pronoun my, his
+     * RB adverb however, usually, naturally, here, good
+     * RBR adverb, comparative better
+     * RBS adverb, superlative best
+     * RP particle give up
+     * SENT Sentence-break punctuation . ! ?
+     * SYM Symbol / [ = *
+     * TO infinitive ‘to’ togo
+     * UH interjection uhhuhhuhh
+     * VB verb be, base form be
+     * VBD verb be, past tense was, were
+     * VBG verb be, gerund/present participle being
+     * VBN verb be, past participle been
+     * VBP verb be, sing. present, non-3d am, are
+     * VBZ verb be, 3rd person sing. present is
+     * VH verb have, base form have
+     * VHD verb have, past tense had
+     * VHG verb have, gerund/present participle having
+     * VHN verb have, past participle had
+     * VHP verb have, sing. present, non-3d have
+     * VHZ verb have, 3rd person sing. present has
+     * VV verb, base form take
+     * VVD verb, past tense took
+     * VVG verb, gerund/present participle taking
+     * VVN verb, past participle taken
+     * VVP verb, sing. present, non-3d take
+     * VVZ verb, 3rd person sing. present takes
+     * WDT wh-determiner which
+     * WP wh-pronoun who, what
+     * WP$ possessive wh-pronoun whose
+     * WRB wh-abverb where, when
+     * # # #
+     * $ $ $
+     * “ Quotation marks ‘ “
+     * `` Opening quotation marks ‘ “
+     * ( Opening brackets ( {
+     * ) Closing brackets ) }
+     * , Comma ,
+     * : Punctuation – ; : — …
+     * Main differences to default Penn tagset
+     * In TreeTagger tool
+     * 
+     * Distinguishes be (VB) and have (VH) from other (non-modal) verbs (VV)
+     * For proper nouns, NNP and NNPS have become NP and NPS
+     * SENT for end-of-sentence punctuation (other punctuation tags may also differ)
+     * 
+     * 
+     */
 
 }

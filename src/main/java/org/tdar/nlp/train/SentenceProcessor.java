@@ -34,6 +34,7 @@ public class SentenceProcessor {
 
     public SentenceResult processSentence(String sentence___) {
         String sentence__ = sentence___.replaceAll("[\r\n]", " ");
+        sentence__ = sentence__.replaceAll("\\s+", " ");
         sentence__ = Utils.replaceSmartQuotes(sentence__);
         List<Integer> starts = new ArrayList<>();
         List<Integer> ends = new ArrayList<>();
@@ -43,7 +44,13 @@ public class SentenceProcessor {
             if (StringUtils.containsIgnoreCase(sentence__, term)) {
             terms.add(new String(term));
             if (term.contains(" ")) {
-                String term_ = term.replace(" ", "_");
+                String term_ = StringUtils.replace(term, " ", "_");
+                term_ = StringUtils.replace(term_,",", "_");
+                term_ = StringUtils.replace(term_,".", "_");
+                term_ = StringUtils.replace(term_,"__", "_");
+                if (term_.endsWith(".")) {
+                    term_ = term_.substring(0, term_.length() - 1);
+                }
                 sentence__ = sentence__.replaceAll("(?i)" + term, term_);
                 term = term_;
             }
@@ -58,6 +65,9 @@ public class SentenceProcessor {
         String[] tags = tagger.tag(words);
         log.trace("matching terms in sentence: {}", terms);
         SentenceResult result = new SentenceResult();
+//        if (sentence__.toLowerCase().contains("abbott") || sentence__.toLowerCase().contains("watkins"))  {
+//            log.debug("{} -- {}", terms_, sentence__);
+//        }
         for (String term : terms_) {
             log.trace(term);
             if (StringUtils.isBlank(term) || !StringUtils.containsIgnoreCase(sentence__, term)) {
@@ -81,6 +91,7 @@ public class SentenceProcessor {
                 // }
                 // //
                 if (term.equalsIgnoreCase(word) && !caseSensitive || term.equals(word) && caseSensitive) {
+                    log.trace("{}|{}", term, word);
                     int j = i + 1;
                     while (true) {
                         if (j > words.length - 1) {
@@ -158,9 +169,10 @@ public class SentenceProcessor {
                     }
 //                    log.trace("{} ... {} [{}]", words[h], words[j], reject);
                     if (i != j - 1 || reject) {
+                        log.trace("rejected {} {} | {}", i, j , reject);
                         continue;
                     }
-
+                    log.trace("{} {} {}", term, h, j);
                     starts.add(h);
                     ends.add(j);
                     String out = "";
@@ -210,6 +222,9 @@ public class SentenceProcessor {
             } else {
                 sb.append(str);
             }
+        }
+        if (sb.indexOf("<END>") == -1 && sb.indexOf("<START")> 0) {
+            sb.append(" <END>");   
         }
         return sb.toString();
     }

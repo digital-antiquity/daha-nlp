@@ -41,7 +41,15 @@ public class TrainingTest {
     }
     
     
-    
+    @Test
+    public void testPerson() throws FileNotFoundException, IOException {
+        SentenceProcessor sp = setup("ontologies/People.txt");
+        SentenceResult processSentence = sp.processSentence("Gregory, David A. 1983 Excavations at the Siphon Draw Site.");
+        log.debug("{} {}", processSentence.getTags(), processSentence.getSentence());
+        
+        assertTrue(processSentence.getTags().contains("Gregory David A "));
+    }
+
     @Test
     public void testPunctuationBreak() throws FileNotFoundException, IOException {
         SentenceProcessor sp = setup("ontologies/Cultures_flattened.txt");

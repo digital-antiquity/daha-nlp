@@ -21,17 +21,19 @@ import opennlp.tools.namefind.TokenNameFinderModel;
  *
  */
 public class NLPHelper {
-    
+
     private final Logger log = LogManager.getLogger(getClass());
 
-    public static String[] stopWords = { "investigation", "catalog", "and", "or", "appendix", "submitted", "expection", "feature","figures", "table","page", "figure", "below", "collection", "indeterminate","unknown", "not", "comments", "available", "count", "miles", "feet","acres","inches", "photo","zone" ,"Miscellaneous"};
+    public static String[] stopWords = { "investigation", "catalog", "and", "or", "appendix", "submitted", "expection", "feature", "figures", "table", "page",
+            "figure", "below", "collection", "indeterminate", "unknown", "not", "comments", "available", "count", "miles", "feet", "acres", "inches", "photo",
+            "zone", "Miscellaneous" };
     private String regexBoost = null;
     private List<String> boostValues = new ArrayList<>();
     private List<String> skipPreviousTerms = new ArrayList<>();
     public static final String NUMERIC_PUNCTUATION = "^[\\d\\s/" + Utils.PUNCTUATION + "]+$";
     public static final int MIN_TERM_LENGTH = 3;
     public static final boolean REMOVE_HTML_TERMS = true;
-    
+
     private String type;
     private int minPercentOneLetter = 50;
     private int minPercentNumberWords = 50;
@@ -41,18 +43,18 @@ public class NLPHelper {
 
     private List<TokenNameFinderModel> models;
 
-    public NLPHelper(String type, TokenNameFinderModel ... models) {
+    private List<String> ignoreTerms = new ArrayList<>();;
+
+    public NLPHelper(String type, TokenNameFinderModel... models) {
         this.type = type;
         this.models = Arrays.asList(models);
     }
-
 
     public boolean stringValid(String key) {
         if ((StringUtils.contains(key, "=\"") || StringUtils.contains(key, "=\'")) && REMOVE_HTML_TERMS) {
             return false;
         }
 
-        
         // see http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.81.8901&rep=rep1&type=pdf for more ideas
         if (key.matches(NUMERIC_PUNCTUATION)) {
             return false;
@@ -82,6 +84,13 @@ public class NLPHelper {
             return false;
         }
 
+        for (String part : key.split(" ")) {
+            for (String term : ignoreTerms) {
+                if (part.equalsIgnoreCase(term.toLowerCase())) {
+                    return false;
+                }
+            }
+        }
         if (unmatchedChars(key)) {
             return false;
         }
@@ -126,7 +135,6 @@ public class NLPHelper {
         return false;
     }
 
-
     /**
      * What % of the term is made up of numbers
      * 
@@ -144,8 +152,6 @@ public class NLPHelper {
         return Utils.toPercent(letterCount, words.length);
     }
 
-
-
     /**
      * Does the string contain a word to ignore
      * 
@@ -153,9 +159,9 @@ public class NLPHelper {
      * @return
      */
     public static boolean containsStopWord(String val) {
-        String match = ".*\\b("+StringUtils.join(stopWords,"|")+")\\b.*".toLowerCase();
+        String match = ".*\\b(" + StringUtils.join(stopWords, "|") + ")\\b.*".toLowerCase();
         if (val.toLowerCase().matches(match)) {
-                return true;
+            return true;
         }
         return false;
     }
@@ -176,7 +182,6 @@ public class NLPHelper {
         }
         return Utils.toPercent(letterCount, words.length);
     }
-
 
     public String getType() {
         return type;
@@ -246,14 +251,18 @@ public class NLPHelper {
         this.skipPreviousTerms = skipPreviousTerms;
     }
 
-
     public List<TokenNameFinderModel> getModels() {
         return models;
     }
 
-
     public void setModels(List<TokenNameFinderModel> models) {
         this.models = models;
+    }
+
+    public void setTermIgnore(List<String> asList) {
+        this.ignoreTerms = asList;
+        // TODO Auto-generated method stub
+
     }
 
 }

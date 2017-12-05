@@ -37,6 +37,7 @@ public class VocabList {
             if (t_.toLowerCase().contains("period")) {
                 toAdd.add(StringUtils.replace(t_, "Period", "period"));
             }
+            toAdd.add(t_.replaceAll("\\s\\w\\.\\s", " "));
         }
         list.addAll(toAdd);
 
