@@ -16,6 +16,8 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDDocumentNameDictionary;
 import org.apache.pdfbox.pdmodel.PDEmbeddedFilesNameTreeNode;
+import org.apache.pdfbox.pdmodel.common.PDNameTreeNode;
+import org.apache.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecification;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
@@ -69,7 +71,7 @@ public class PdfInspector {
         PDDocumentNameDictionary names = cat.getNames();
         if (names != null) {
             PDEmbeddedFilesNameTreeNode embeddedFiles = names.getEmbeddedFiles();
-            if (embeddedFiles != null) {
+            if (embeddedFiles != null && embeddedFiles.getNames() != null) {
                 hasEmbeddedFiles = true;
                 logger.debug("{}\tfiles:\t{}", file.getName(), embeddedFiles.getNames().keySet());
             }
