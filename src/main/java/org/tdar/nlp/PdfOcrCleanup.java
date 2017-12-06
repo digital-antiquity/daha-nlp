@@ -74,6 +74,7 @@ public class PdfOcrCleanup {
         pairs.add(new String[] { " V a", " Va" });
         pairs.add(new String[] { " V e", " Ve" });
         pairs.add(new String[] { " W a", " Wa" });
+        pairs.add(new String[] { " G ila", " Gila" });
         pairs.add(new String[] { " G la", " Gla" });
         pairs.add(new String[] { " W o", " Wo" });
         pairs.add(new String[] { "W ith", "With" });
@@ -92,15 +93,19 @@ public class PdfOcrCleanup {
         pairs.add(new String[] { "-m or", "-mor" });
         pairs.add(new String[] { " m a", " ma" });
         pairs.add(new String[] { " m ic", " mic" });
-        pairs.add(new String[] { " M o", " Mo" });
-        pairs.add(new String[] { " N o", " No" });
+        pairs.add(new String[] { " H oho­", " Hoho­" });
         pairs.add(new String[] { " H a", " Ha" });
         pairs.add(new String[] { " H ei", " Hei" });
         pairs.add(new String[] { " H en", " Hen" });
         pairs.add(new String[] { " M e", " Me" });
         pairs.add(new String[] { " M i", " Mi" });
         pairs.add(new String[] { " M u", " Mu" });
+        pairs.add(new String[] { " N atu", " Natu" });
+        pairs.add(new String[] { " M o", " Mo" });
+        pairs.add(new String[] { " N o", " No" });
         pairs.add(new String[] { " U n", " Un" });
+        pairs.add(new String[] { " R ed-", " Red-" });
+        pairs.add(new String[] { " R ed ", " Red " });
         pairs.add(new String[] { " A riz", " Ariz" });
         pairs.add(new String[] { " A rc", " Arc" });
         pairs.add(new String[] { " A nthr", " Anthr" });
@@ -115,6 +120,7 @@ public class PdfOcrCleanup {
         pairs.add(new String[] { " com bin", " combin" });
         pairs.add(new String[] { "com pli", "compli" });
         pairs.add(new String[] { "com pa", "compa" });
+        pairs.add(new String[] { " Com pa", " Compa" });
         pairs.add(new String[] { "tm ent", "tment" });
         pairs.add(new String[] { " num ber", " number" });
         pairs.add(new String[] { "eden­ tar", "edentar" });

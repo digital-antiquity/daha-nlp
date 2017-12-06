@@ -44,8 +44,9 @@ public class ResultAnalyzer {
         for (String key : map.keySet()) {
             TermWrapper wrap_ = map.get(key);
             TermWrapper wrap = ocur.getOrDefault(key.toLowerCase(),wrap_);
-            
-            if (!wrap.equals(wrap_)) {
+
+            // if they're not the same object, combine them
+            if (System.identityHashCode(wrap) != System.identityHashCode(wrap_)) {
                 wrap.combine(wrap_);
             }
             ocur.put(key.toLowerCase(), wrap);
@@ -67,6 +68,11 @@ public class ResultAnalyzer {
             String key = entry.getKey();
             key = Utils.cleanString(key);
             avg += value.getOccur();
+            TermWrapper termWrapper = multiWord.get(key);
+            if (termWrapper != null) {
+                termWrapper.combine(value);
+                continue;
+            }
             int numSpaces = StringUtils.countMatches(key, " ");
             if (numSpaces < SKIP_PHRASES_LONGER_THAN) {
                 multiWord.put(key, value);

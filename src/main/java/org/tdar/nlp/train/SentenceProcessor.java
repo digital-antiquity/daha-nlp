@@ -65,9 +65,9 @@ public class SentenceProcessor {
         String[] tags = tagger.tag(words);
         log.trace("matching terms in sentence: {}", terms);
         SentenceResult result = new SentenceResult();
-//        if (sentence__.toLowerCase().contains("abbott") || sentence__.toLowerCase().contains("watkins"))  {
-//            log.debug("{} -- {}", terms_, sentence__);
-//        }
+        if (sentence__.toLowerCase().contains("abbott") || sentence__.toLowerCase().contains("watkins"))  {
+            log.debug("{} -- {}", terms_, sentence__);
+        }
         for (String term : terms_) {
             log.trace(term);
             if (StringUtils.isBlank(term) || !StringUtils.containsIgnoreCase(sentence__, term)) {
@@ -144,9 +144,9 @@ public class SentenceProcessor {
                             break;
                         }
 
-                        boolean containsTableTerm = ArrayUtils.contains(new String[] { "context","total", "type","class","sequence","comments" }, previousWord.toLowerCase());
+                        
 
-                        if (containsTableTerm) {
+                        if (Utils.isTablePart(previousWord)) {
                             reject = true;
                             log.trace("rejected because likely table");
                             break;

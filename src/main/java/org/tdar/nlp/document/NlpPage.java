@@ -44,6 +44,7 @@ public class NlpPage {
     }
 
     private boolean appendOcurrenceMap(SpanWrapper sw) {
+
         //String key, int pos, double probability, String type) {
         Map<String, TermWrapper> map = data.getOrDefault(sw.getType(), new HashMap<String, TermWrapper>());
         TermWrapper value = new TermWrapper(sw.getText());
@@ -85,7 +86,7 @@ public class NlpPage {
             }
         }
         getSentences().add(sentence);
-        reconcileSpans();
+        reconcileSpans(sentence);
 
     }
 
@@ -143,7 +144,7 @@ public class NlpPage {
     }
 
     
-    public void reconcileSpans() {
+    public void reconcileSpans(String sentence) {
 
         // sort tokens by start, then end, to be able to compare overlaps
         Collections.sort(spans, new Comparator<SpanWrapper>() {
@@ -175,7 +176,6 @@ public class NlpPage {
         SpanWrapper current = null;
         List<SpanWrapper> toRemove = new ArrayList<>();
         for (SpanWrapper wrap : spans) {
-            log.trace(wrap);
             if (current !=  null && (current.getSpan().contains(wrap.getSpan()) || current.getSpan().intersects(wrap.getSpan()))) {
                 log.trace("removing: {} {} {}", wrap.getText(), wrap.getSpan().getProb(), current.getSpan().getProb());
                 if (StringUtils.equals(current.getType() , wrap.getType())) {

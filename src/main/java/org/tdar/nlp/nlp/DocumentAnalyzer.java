@@ -242,8 +242,6 @@ public class DocumentAnalyzer {
         // https://opennlp.apache.org/documentation/1.5.3/manual/opennlp.html
         NameFinderME nameFinder = new NameFinderME(model3);
 
-        // NEED TO CREATE A DATA MODEL OF A PAGE, and THEN APPLY TOKENS TO PAGE, IF TOKEN IS LARGER THAN AN EXISITNG TOKEN (overlap) THEN
-        // EMBED ONE INSIDE THE OTHER
         Span[] names = nameFinder.find(tokens);
         String[] matches = Span.spansToStrings(names, tokens);
         for (int i = 0; i < matches.length; i++) {
@@ -264,7 +262,9 @@ public class DocumentAnalyzer {
             if (!helper.stringValid(key)) {
                 return;
             }
-
+//            if (helper.getType().equalsIgnoreCase("person") && StringUtils.indexOfIgnoreCase(key, "jerry howard") > -1) {
+//                log.debug("{} - {}", page.getPageNumber(), key);
+//            }
             page.addSpan(span, key, pos, helper.getType());
         }
         nameFinder.clearAdaptiveData();

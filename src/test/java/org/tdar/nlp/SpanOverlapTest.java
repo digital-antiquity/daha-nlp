@@ -23,7 +23,7 @@ public class SpanOverlapTest {
         for (SpanWrapper sw : spans) {
             page.addSpan(sw.getSpan(), sw.getText(),  1, sw.getType());
         }
-        page.reconcileSpans();
+        page.reconcileSpans("");
     }
 
 }

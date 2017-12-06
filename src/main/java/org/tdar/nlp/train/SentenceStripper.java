@@ -75,9 +75,11 @@ public class SentenceStripper {
                 log.debug("\n#######\n#######  FILE: {}", file.getName());
                 log.debug("\n#######  terms: {}\n#######\n####", list.getList());
                 SentenceProcessor sp = new SentenceProcessor(tokenizerModel, tagger, tagName, list.getList());
-                for (String sentence___ : sentenceDetector.sentDetect(input)) {
-                    for (String sentence____ : sentence___.split("(\n|\r\n)++")) {
-
+                for (String _sentence : sentenceDetector.sentDetect(input)) {
+                    for (String sentence____ : _sentence.split("(\n|\r\n)++")) {
+//                    if (sentence____.toLowerCase().contains("abbott")) {
+//                        log.debug(sentence____);
+//                    }
                         // https://www.sketchengine.co.uk/penn-treebank-tagset/
                         SentenceResult result = sp.processSentence(sentence____);
                         uniqueTags.addAll(result.getTags());

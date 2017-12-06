@@ -1,12 +1,16 @@
 package org.tdar.nlp;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.geotools.xml.styling.sldComplexType;
+
 public class Utils {
     public static final String PUNCTUATION = "\\.;\\(\\)\\[\\]\\?\\-\\_\\,\\^\\&°£»\\|\\*\\/’\"\'«";
 
     public static int toPercent(int numCount, int totalCount) {
         return (int) (((float) numCount / (float) totalCount) * 100);
     }
-    
+
     public static String replaceSmartQuotes(String str) {
         // See http://www.microsoft.com/typography/unicode/1252.htm
         String str_ = str.replaceAll("[\u0091\u0092\u2018\u2019]", "\'");
@@ -59,7 +63,30 @@ public class Utils {
     }
 
     public static boolean isPunctuation(String firstLetter) {
-        return firstLetter.matches("["+PUNCTUATION+"]");
+        return firstLetter.matches("[" + PUNCTUATION + "]");
+    }
+
+    public static boolean isTablePart(String key) {
+        for (String part : StringUtils.split(key.toLowerCase())) {
+            // if we wanted to, we could add 'type' here to check for : ,"ne","sw","nw" w/o location
+            boolean containsTableTerm = ArrayUtils.contains(new String[] { "context", "total", "type", "class", "sequence", "comments","yes","no" }, part);
+            if (containsTableTerm) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean lastWordOneLetter(String key) {
+        if (StringUtils.isBlank(key) || !key.contains(" ")) {
+            return false;
+        }
+        String[] split = key.split(" ");
+
+        if (split[split.length - 1].length() == 1) {
+            return true;
+        }
+        return false;
     }
 
 }

@@ -71,6 +71,14 @@ public class NLPHelper {
         if (percentOneLetter > getMinPercentOneLetter()) {
             return false;
         }
+        
+        if (Utils.isTablePart(key)) {
+            return false;
+        }
+        
+        if (Utils.lastWordOneLetter(key)) {
+            return false;
+        }
 
         if (percentNumberWords(key) > getMinPercentNumberWords()) {
             return false;

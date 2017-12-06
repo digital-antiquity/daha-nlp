@@ -88,7 +88,10 @@ public class TermWrapper implements Serializable {
 
     public TermWrapper combine(TermWrapper value) {
         occur += value.getOccur();
-        alternates.add(value);
+        probability.add(value.getProbabilty());
+        if (!value.getTerm().equals(getTerm())) {
+            alternates.add(value);
+        }
         alternates.addAll(value.getAlternates());
         return this;
     }

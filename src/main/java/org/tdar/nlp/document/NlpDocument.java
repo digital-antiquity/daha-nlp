@@ -12,7 +12,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tdar.nlp.nlp.NLPHelper;
 import org.tdar.nlp.nlp.ResultAnalyzer;
-import org.tdar.nlp.result.Page;
 import org.tdar.nlp.result.ResultDocument;
 import org.tdar.nlp.result.Section;
 import org.tdar.nlp.result.SectionType;
@@ -144,12 +143,16 @@ public class NlpDocument {
                 
                 if (pages.get(i).isBibliography()) {
                     bib = i;
-                    declaredBib = i;
+                    // get "earliest" declared bib
+                    if (declaredBib == -1) {
+                        declaredBib = i;
+                    }
                 }
             }
         }
         
-        if (bib == -1 && declaredBib > 0) {
+        // if the declared bib is < actual bib, or declared bib has been found; then use that
+        if (bib == -1 && declaredBib > 0 || declaredBib < bib) {
             bib = declaredBib;
         }
         
