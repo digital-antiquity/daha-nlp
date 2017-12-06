@@ -2,37 +2,39 @@ package org.tdar.nlp;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDDocumentNameDictionary;
 import org.apache.pdfbox.pdmodel.PDEmbeddedFilesNameTreeNode;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
-import org.tdar.TestConstants;
-import org.tdar.core.configuration.TdarConfiguration;
-
-import com.sun.media.Log;
+import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 
 public class PdfInspector {
 
     static final Logger logger = LogManager.getLogger(App.class);
 
     public void inspect(File file) throws InvalidPasswordException, IOException {
-        PDDocument document = PDDocument.load(file, TdarConfiguration.getInstance().getPDFMemoryReadSetting());
+        PDDocument document = PDDocument.load(file, MemoryUsageSetting.setupTempFileOnly());
         PDDocumentCatalog cat = document.getDocumentCatalog();
         boolean hasForm = false;
         boolean hasLayers = false;
         boolean hasEmbeddedFiles = false;
-        if (cat.getAcroForm() != null) {
+        PDAcroForm form = cat.getAcroForm();
+        if (form != null) {
+            logger.debug("]t{}\tfields:\t{}",file.getName(), form.getFields());
             hasForm = true;
         }
-        if (cat.getOCProperties() != null) {
+        PDOptionalContentProperties layers = cat.getOCProperties();
+        if (layers != null) {
+            logger.debug("{}\tlayers:\t{}",file.getName(), layers.getGroupNames());
             hasLayers = true;
         }
         // http://www.javased.com/?api=org.apache.pdfbox.pdmodel.PDDocumentCatalog
@@ -41,8 +43,10 @@ public class PdfInspector {
             PDEmbeddedFilesNameTreeNode embeddedFiles = names.getEmbeddedFiles();
             if (embeddedFiles != null) {
                 hasEmbeddedFiles = true;
+                logger.debug("{}\tfiles:\t{}", file.getName(), embeddedFiles.getNames().keySet());
             }
         }
+        document.getDocumentInformation().getCreator();
         logger.debug("{}\t{}\t{}\t{}\t{}", file.getName(), document.getVersion(), hasEmbeddedFiles, hasForm, hasLayers);
 
     }
