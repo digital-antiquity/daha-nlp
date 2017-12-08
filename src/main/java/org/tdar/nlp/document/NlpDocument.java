@@ -128,6 +128,7 @@ public class NlpDocument {
                 Integer num = pages.get(i).getTotalReferences().get(NlpPage.ALL);
                 if (num > avg && bib == -1) {
                     bib = i;
+                    log.trace("likely bib @ {}", i);
                 }
 
                 // if we go down again, count it
@@ -139,9 +140,11 @@ public class NlpDocument {
                 if (below > 2 && pages.size() - i > 10) {
                     below = 0;
                     bib = -1;
+                    log.trace("resetting bib @ {}", i);
                 }
                 
                 if (pages.get(i).isBibliography()) {
+                    log.trace("found bib by string @ {}", i);
                     bib = i;
                     // get "earliest" declared bib
                     if (declaredBib == -1) {
@@ -152,7 +155,7 @@ public class NlpDocument {
         }
         
         // if the declared bib is < actual bib, or declared bib has been found; then use that
-        if (bib == -1 && declaredBib > 0 || declaredBib < bib) {
+        if (declaredBib > 0 && (bib == -1 || declaredBib < bib)) {
             bib = declaredBib;
         }
         

@@ -5,12 +5,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
+import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.jena.sparql.function.library.leviathan.sec;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tdar.nlp.TermWrapper;
@@ -20,8 +18,8 @@ import org.tdar.nlp.result.Section;
 
 public class ResultAnalyzer {
 
+    private static final int OVERRIDE_RELEVANCY_WITH_OCURRENCE_HIGHER_THAN = 20;
     public static final int SKIP_PHRASES_LONGER_THAN = 5;
-    private static final String PERSON = "person";
     private final Logger log = LogManager.getLogger(getClass());
     private String regexBoost = null;
     private Double minProbability = .5;
@@ -61,7 +59,7 @@ public class ResultAnalyzer {
         for (Entry<String, TermWrapper> entry : ocur.entrySet()) {
             TermWrapper value = entry.getValue();
             log.trace("{} prob:{} ocur:{}", value.getTerm(), value.getProbabilty(), value.getOccur());
-            if (value.getProbabilty() < getMinProbability()) {
+            if (value.getProbabilty() < getMinProbability() && value.getOccur() < OVERRIDE_RELEVANCY_WITH_OCURRENCE_HIGHER_THAN) {
                 continue;
             }
 

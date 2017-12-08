@@ -28,7 +28,7 @@ public class App {
         if (filename == null) {
             //Hohokam
             filename = "/Users/abrin/Dropbox (ASU)/PDFA-Analysis/lc4-abbyy12-pdfa.pdf";
-//             filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
+             filename = "/Users/abrin/Downloads/ABDAHA-2/Kelly-et-al-2010_OCR_PDFA.pdf";
 //            filename = "/Users/abrin/Downloads/ABDAHA-2/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
 //             filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
 //             filename = "tmp/Underfleet1.html.txt";

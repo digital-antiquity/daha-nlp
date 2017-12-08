@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tdar.nlp.ModelDownloader;
 import org.tdar.nlp.PdfOcrCleanup;
+import org.tdar.nlp.nlp.DocumentAnalyzer;
 
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
@@ -76,7 +77,7 @@ public class SentenceStripper {
                 log.debug("\n#######  terms: {}\n#######\n####", list.getList());
                 SentenceProcessor sp = new SentenceProcessor(tokenizerModel, tagger, tagName, list.getList());
                 for (String _sentence : sentenceDetector.sentDetect(input)) {
-                    for (String sentence____ : _sentence.split("(\n|\r\n)++")) {
+                    for (String sentence____ : _sentence.split(DocumentAnalyzer.SPLIT_SENTENCE)) {
 //                    if (sentence____.toLowerCase().contains("abbott")) {
 //                        log.debug(sentence____);
 //                    }

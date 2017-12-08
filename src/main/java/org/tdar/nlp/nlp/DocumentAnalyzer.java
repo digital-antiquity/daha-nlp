@@ -45,6 +45,8 @@ import opennlp.tools.util.Span;
 
 public class DocumentAnalyzer {
 
+    public static final String SPLIT_SENTENCE = "(\n|\r\n){2,5}";
+
     private final Logger log = LogManager.getLogger(getClass());
 
     public static final String END_PAGE = "______END___PAGE______";
@@ -68,8 +70,8 @@ public class DocumentAnalyzer {
         TokenNameFinderModel modelSitename = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-site.bin")));
         TokenNameFinderModel modelCulture = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-culture.bin")));
         TokenNameFinderModel modelCeramic = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-ceramic.bin")));
-        TokenNameFinderModel modelPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-person.bin")));
         TokenNameFinderModel modelDate = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-date.bin")));
+        TokenNameFinderModel modelPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-person.bin")));
         TokenNameFinderModel modelCustomPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-customperson.bin")));
         TokenNameFinderModel modelCustomOrganization = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-customorganization.bin")));
         TokenNameFinderModel modelCustomLocation = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-customlocation.bin")));
@@ -106,7 +108,7 @@ public class DocumentAnalyzer {
         person.setMinTermLength(4);
         // matching initials
 //        person.setRegexBoost("(.+\\s\\w\\.\\s.+|\\w\\.\\s\\.+)");
-        person.setBoostValues(Arrays.asList("dr.", "mr.", "mrs."));
+//        person.setBoostValues(Arrays.asList("dr.", "mr.", "mrs."));
         person.setMinPercentNumberWords(2);
         person.setTermIgnore(Arrays.asList("mesa"));
         person.setSkipPreviousTerms(Arrays.asList("of", "in", "the"));
@@ -159,7 +161,7 @@ public class DocumentAnalyzer {
             // as we get better here, for performance, this could be moved up into the cached text above
             sentence__ = sentence__.replaceAll("(?:^|\r?\n)[0-9]+(\r?\n)+"+END_PAGE, END_PAGE);
             
-            for (String sentence_ : sentence__.split("(\n|\r\n)++")) {
+            for (String sentence_ : sentence__.split(SPLIT_SENTENCE)) {
                 sentence = sentence_;
 
                 log.trace("::" + sentence);
@@ -170,10 +172,10 @@ public class DocumentAnalyzer {
                 } else {
                     page.addSentence(sentence);
                 }
-                Tokenizer tokenizer = new TokenizerME(tokenizerModel);
                 if (includeSiteCode) {
                     page.extractSiteCodes(sentence);
                 }
+                Tokenizer tokenizer = new TokenizerME(tokenizerModel);
                 String tokens[] = tokenizer.tokenize(sentence);
 
                 for (NLPHelper h : doc.getHelpers()) {
@@ -212,30 +214,6 @@ public class DocumentAnalyzer {
         doc.addPage(page);
         log.debug(page);
         return sentence;
-    }
-
-    
-    private static File downloadModels() throws MalformedURLException, IOException, FileNotFoundException {
-        List<URL> urls = new ArrayList<URL>();
-        urls.add(new URL("http://opennlp.sourceforge.net/models-1.5/en-sent.bin"));
-        urls.add(new URL("http://opennlp.sourceforge.net/models-1.5/en-token.bin"));
-        urls.add(new URL("http://opennlp.sourceforge.net/models-1.5/en-ner-organization.bin"));
-        urls.add(new URL("http://opennlp.sourceforge.net/models-1.5/en-ner-person.bin"));
-        urls.add(new URL("http://opennlp.sourceforge.net/models-1.5/en-ner-location.bin"));
-        File dir = new File("models");
-        dir.mkdir();
-        for (URL url : urls) {
-            String urlToLoad = StringUtils.substringAfter(url.toString(), "1.5/");
-            File f = new File(dir, urlToLoad);
-            if (!f.exists()) {
-
-                ReadableByteChannel rbc = Channels.newChannel(url.openStream());
-                FileOutputStream fos = new FileOutputStream(f);
-                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                IOUtils.closeQuietly(fos);
-            }
-        }
-        return dir;
     }
 
     private void processResults(NlpPage page, TokenNameFinderModel model3, String[] tokens, int pos, NLPHelper helper) {

@@ -1,6 +1,9 @@
 package org.tdar.nlp;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,9 +11,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.tdar.nlp.train.SentenceProcessor;
 import org.tdar.nlp.train.SentenceResult;
@@ -18,6 +21,8 @@ import org.tdar.nlp.train.VocabList;
 
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
 
 public class TrainingTest {
@@ -30,6 +35,31 @@ public class TrainingTest {
         log.debug(processSentence.getSentence());
         assertNotNull(processSentence.getSentence());
     }
+
+    @Test
+    public void testSentenceSplit() throws FileNotFoundException, IOException {
+        SentenceProcessor sp = setup("ontologies/Cultures_flattened.txt");
+        String sentence = "First \n\n" + 
+                "founded in the early centuries A.D., La \n" + 
+                "Ciudad endured for a millennium or more, \n" + 
+                "evolving new forms of organization to meet \n" + 
+                "life’s challenges on several scales of\n" + 
+                "interaction, only to fail in the end when \n" + 
+                "the Hohokam abandoned the Phoenix basin \n" + 
+                "about A.D. 1450.";
+        File dir = ModelDownloader.downloadModels();
+        SentenceModel sModel = new SentenceModel(new FileInputStream(new File(dir, "en-sent.bin")));
+        SentenceDetectorME sentenceDetector = new SentenceDetectorME(sModel);
+
+        for (String _sentence : sentenceDetector.sentDetect(sentence)) {
+            for (String sentence____ : _sentence.split("(\n|\r\n){2,5}")) {
+    
+            SentenceResult processSentence = sp.processSentence(sentence____);
+            log.debug(processSentence.getSentence());
+            }}
+//        assertNotNull(processSentence.getSentence());
+    }
+
 
     
     @Test
