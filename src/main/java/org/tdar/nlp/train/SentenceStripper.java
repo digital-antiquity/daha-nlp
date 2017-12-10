@@ -23,7 +23,7 @@ import opennlp.tools.tokenize.TokenizerModel;
 public class SentenceStripper {
 
     private static boolean html;
-    private static String tagName = "culture";
+    private static String tagName = "person";
     static final Logger log = LogManager.getLogger(SentenceStripper.class);
 
     // can we extract title by matching on common words?

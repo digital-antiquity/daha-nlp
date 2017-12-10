@@ -72,9 +72,9 @@ public class DocumentAnalyzer {
         TokenNameFinderModel modelCeramic = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-ceramic.bin")));
         TokenNameFinderModel modelDate = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-date.bin")));
         TokenNameFinderModel modelPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-person.bin")));
-        TokenNameFinderModel modelCustomPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-customperson.bin")));
-        TokenNameFinderModel modelCustomOrganization = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-customorganization.bin")));
-        TokenNameFinderModel modelCustomLocation = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-customlocation.bin")));
+        TokenNameFinderModel modelCustomPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-custom-person.bin")));
+        TokenNameFinderModel modelCustomOrganization = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-custom-organization.bin")));
+        TokenNameFinderModel modelCustomLocation = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-custom-location.bin")));
         TokenNameFinderModel modelOrganization = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-organization.bin")));
         TokenNameFinderModel modelLocation = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-location.bin")));
 
