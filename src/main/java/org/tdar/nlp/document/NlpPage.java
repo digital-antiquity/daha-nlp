@@ -176,6 +176,10 @@ public class NlpPage {
         SpanWrapper current = null;
         List<SpanWrapper> toRemove = new ArrayList<>();
         for (SpanWrapper wrap : spans) {
+            /**
+             * May need to use logic here a bit more to prefer certain 'types' of tags/terms over others.  specifically, prefer a person or institution tag over a culture or material type.  John Stone (Person)> John Stone (Material);
+             * This might also help with Location over Person "Perry Mesa" (Location) over Perry Mesa (Person) 
+             */
             if (current !=  null && (current.getSpan().contains(wrap.getSpan()) || current.getSpan().intersects(wrap.getSpan()))) {
                 log.trace("removing: {} {} {}", wrap.getText(), wrap.getSpan().getProb(), current.getSpan().getProb());
                 if (StringUtils.equals(current.getType() , wrap.getType())) {
