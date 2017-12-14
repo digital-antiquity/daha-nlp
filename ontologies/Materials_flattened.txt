@@ -1,0 +1,51 @@
+Amethyst
+Argillite
+Asbestos
+Biotite
+Bone
+Calcite
+Caliche
+Catlinite
+Ceramic
+Chalcedony
+Chert
+Chrysocolla
+Cinnabar
+Clay
+Concretion
+Copper
+Coral
+Diorite
+Feather
+Galena
+Gravel
+Granite
+Gypsum
+Hair
+Hematite
+Iron Oxide
+Lead
+Limonite
+Malachite
+Manganese Oxide
+Mica
+Muscovite
+Obsidian
+Ochre
+Otolith
+Pitch
+Pollen
+Pyrite
+Iron Pyrite
+Rhodochrosite
+Quartz
+Salt
+Schist
+Shell
+Freshwater Shell
+Marine Shell
+Stone
+Turquoise 
+Wood
+Phyllite
+Basalt

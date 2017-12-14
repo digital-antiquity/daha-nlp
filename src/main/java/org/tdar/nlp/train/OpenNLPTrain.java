@@ -1,12 +1,16 @@
 package org.tdar.nlp.train;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+
+import org.apache.commons.io.FileUtils;
+import org.tdar.nlp.SourceType;
 
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.NameSample;
@@ -34,17 +38,24 @@ public class OpenNLPTrain {
     }
 
     public static void main(String[] args) throws IOException {
-        train("en-ner-citation.bin", "citation", "cite.train");
-        train("en-ner-site.bin", "site", "site.train");
-        train("en-ner-culture.bin", "culture", "culture.train");
-        train("en-ner-ceramic.bin", "ceramic", "ceramic.train");
-        train("en-ner-custom-person.bin", "person", "person.train");
-        train("en-ner-custom-organization.bin", "organization", "organization.train");
-        train("en-ner-custom-location.bin", "location", "location.train");
+        for (SourceType type: SourceType.values()) {
+            train(type.getTrainingFilename() + ".bin", type.name().toLowerCase(), type.name().toLowerCase() + ".train");
+        }
+//        train("en-ner-site.bin", "site", "site.train");
+//        train("en-ner-culture.bin", "culture", "culture.train");
+//        train("en-ner-ceramic.bin", "ceramic", "ceramic.train");
+//        train("en-ner-custom-person.bin", "person", "person.train");
+//        train("en-ner-custom-organization.bin", "organization", "organization.train");
+//        train("en-ner-custom-location.bin", "location", "location.train");
     }
 
     private static void train(String modelFile, String part, String trainFile) throws IOException, FileNotFoundException {
-        InputStreamFactory isf = new InputStreamFactoryImplementation("training/" + trainFile);
+        String path = "training/" + trainFile;
+        File file = new File(path);
+        if (!file.exists()) {
+            return;
+        }
+        InputStreamFactory isf = new InputStreamFactoryImplementation(path);
 
         Charset charset = Charset.forName("UTF-8");
         ObjectStream<String> lineStream = new PlainTextByLineStream(isf, charset);

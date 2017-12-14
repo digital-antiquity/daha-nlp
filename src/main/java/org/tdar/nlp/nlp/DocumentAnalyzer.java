@@ -77,6 +77,7 @@ public class DocumentAnalyzer {
         TokenNameFinderModel modelCustomLocation = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-custom-location.bin")));
         TokenNameFinderModel modelOrganization = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-organization.bin")));
         TokenNameFinderModel modelLocation = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-location.bin")));
+        TokenNameFinderModel modelMaterial = new TokenNameFinderModel(new FileInputStream(new File(dir, "material.bin")));
 
         FeatureGenerator[] featureGenerators = { new NGramFeatureGenerator(1, 1),
                 new NGramFeatureGenerator(2, 3) };
@@ -98,6 +99,7 @@ public class DocumentAnalyzer {
         NLPHelper site = new NLPHelper("site", modelSitename);
         NLPHelper culture = new NLPHelper("culture", modelCulture);
         NLPHelper ceramic = new NLPHelper("ceramic", modelCeramic);
+        NLPHelper material = new NLPHelper("material", modelMaterial);
         site.setBoostValues(Arrays.asList("site","ruin","excavation"));
         NLPHelper cite = new NLPHelper("citation", modelCitation);
         cite.setRegexBoost(".+\\d++.*");
@@ -121,6 +123,7 @@ public class DocumentAnalyzer {
         if (includePerson) {
             doc.getHelpers().add(person);
         }
+        doc.getHelpers().add(material);
         if (includeCitation) {
             doc.getHelpers().add(cite);
         }

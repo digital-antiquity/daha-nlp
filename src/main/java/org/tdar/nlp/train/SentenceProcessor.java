@@ -25,6 +25,8 @@ public class SentenceProcessor {
     private Collection<String> vocabularyList;
     private boolean caseSensitive = true;
 
+    private boolean ignoreLeadingPreposition;
+
     public SentenceProcessor(TokenizerModel tokenizerModel, POSTaggerME tagger, String tagName, Collection<String> list) {
         this.tokenizerModel = tokenizerModel;
         this.tagger = tagger;
@@ -65,9 +67,9 @@ public class SentenceProcessor {
         String[] tags = tagger.tag(words);
         log.trace("matching terms in sentence: {}", terms);
         SentenceResult result = new SentenceResult();
-        if (sentence__.toLowerCase().contains("abbott") || sentence__.toLowerCase().contains("watkins"))  {
-            log.debug("{} -- {}", terms_, sentence__);
-        }
+//        if (sentence__.toLowerCase().contains("abbott") || sentence__.toLowerCase().contains("watkins"))  {
+//            log.debug("{} -- {}", terms_, sentence__);
+//        }
         for (String term : terms_) {
             log.trace(term);
             if (StringUtils.isBlank(term) || !StringUtils.containsIgnoreCase(sentence__, term)) {
@@ -132,17 +134,28 @@ public class SentenceProcessor {
                             previousTag = tags[h];
                             previousWord = words[h];
                         }
-                        if (previousTag.equals("IN") || words[i].equalsIgnoreCase("pueblo") && termIsProperNoun(previousTag, previousWord)) {
+                        if (previousTag.equals("IN") && !isIgnoreLeadingPreposition()) {
                             reject = true;
-                            log.trace("rejected because word is pueblo or previous word is a prepopsition ");
+                            log.trace("rejected because  previous word is a prepopsition ");
+                            break;
+                        }
+                        if (words[i].equalsIgnoreCase("pueblo") && termIsProperNoun(previousTag, previousWord)) {
+                            reject = true;
+                            log.trace("rejected because word is pueblo ");
+                            break;
+                        }
+                        boolean invalidPrefix = ArrayUtils.contains(new String[] {"map","collections"}, previousWord.toLowerCase());
+                        if (invalidPrefix) {
+                            reject = true;
+                            log.trace("invalid prefix");
                             break;
                         }
                         
-                        if (previousWord.equalsIgnoreCase("no") || previousWord.equalsIgnoreCase("not")) {
-                            reject = true;
-                            log.trace("rejected because negation");
-                            break;
-                        }
+//                        if (previousWord.equalsIgnoreCase("no") || previousWord.equalsIgnoreCase("not")) {
+//                            reject = true;
+//                            log.trace("rejected because negation");
+//                            break;
+//                        }
 
                         
 
@@ -152,7 +165,10 @@ public class SentenceProcessor {
                             break;
                         }
                         
-                        boolean containsPrepositionOrThe = ArrayUtils.contains(new String[] {"at","from","the","ofthe","in", "of", "map","collections"}, previousWord.toLowerCase());
+                        boolean containsPrepositionOrThe = ArrayUtils.contains(new String[] {"at","from","the","ofthe","in", "of"}, previousWord.toLowerCase());
+                        if (isIgnoreLeadingPreposition()) {
+                            containsPrepositionOrThe = false;
+                        }
                         // fixme need to catch "classic period Hohokam"
                         if ((!ArrayUtils.contains(new String[] { "early", "middle", "late", "probably" }, previousWord) && !termIsProperNoun(previousTag, previousWord))
                                 || containsPrepositionOrThe || StringUtils.containsAny(previousWord, new char[]{':','='})
@@ -205,14 +221,17 @@ public class SentenceProcessor {
         if (CollectionUtils.isEmpty(starts)) {
             return null;
         }
+        int countOfTags = 0;
         for (int x = 0; x < words.length; x++) {
             if (starts.contains(x)) {
                 sb.append(" <START:");
                 sb.append(tagName);
                 sb.append(">");
+                countOfTags++;
             }
             if (ends.contains(x)) {
                 sb.append(" <END>");
+                countOfTags--;
             }
             sb.append(" ");
             String str = words[x];
@@ -223,7 +242,7 @@ public class SentenceProcessor {
                 sb.append(str);
             }
         }
-        if (sb.indexOf("<END>") == -1 && sb.indexOf("<START")> 0) {
+        if (sb.indexOf("<END>") == -1 && sb.indexOf("<START")> 0 || countOfTags > 0) {
             sb.append(" <END>");   
         }
         return sb.toString();
@@ -235,6 +254,14 @@ public class SentenceProcessor {
 
     public void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
+    }
+
+    public boolean isIgnoreLeadingPreposition() {
+        return ignoreLeadingPreposition;
+    }
+
+    public void setIgnoreLeadingPreposition(boolean ignoreLeadingPreposition) {
+        this.ignoreLeadingPreposition = ignoreLeadingPreposition;
     }
 
 }

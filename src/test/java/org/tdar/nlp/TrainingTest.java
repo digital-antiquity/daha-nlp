@@ -11,7 +11,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
@@ -34,6 +33,29 @@ public class TrainingTest {
         SentenceResult processSentence = sp.processSentence("The Cohonina may have been producing much of the cotton found in the Flagstaff area , not the Hohokam .\n");
         log.debug(processSentence.getSentence());
         assertNotNull(processSentence.getSentence());
+    }
+    
+    @Test
+    public void testOfGranite() throws FileNotFoundException, IOException {
+        SentenceProcessor sp = setup("ontologies/Materials_flattened.txt");
+        sp.setCaseSensitive(false);
+        sp.setIgnoreLeadingPreposition(true);
+        SentenceResult processSentence = sp.processSentence(" In addition to the basalt that covers Perry Mesa , outcrops of granite and schist are also exposed in the steep river canyons that surround the mesa ( Lindgren , 1926 ; Jaggar and Palache , 1905 ; Wilson et al . , 1958 ) .");
+        log.debug(processSentence.getSentence());
+        assertNotNull(processSentence.getSentence());
+        assertTrue(processSentence.getTags().contains("granite"));
+    }
+
+    
+    @Test
+    public void testOfEndTag() throws FileNotFoundException, IOException {
+        SentenceProcessor sp = setup("ontologies/Materials_flattened.txt");
+        sp.setCaseSensitive(false);
+        sp.setIgnoreLeadingPreposition(true);
+        SentenceResult processSentence = sp.processSentence("Schist & Granite");
+        log.debug(processSentence.getSentence());
+        assertNotNull(processSentence.getSentence());
+        assertTrue(processSentence.getSentence().trim().endsWith("<END>"));
     }
 
     @Test

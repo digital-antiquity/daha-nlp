@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tdar.nlp.ModelDownloader;
 import org.tdar.nlp.PdfOcrCleanup;
+import org.tdar.nlp.SourceType;
 import org.tdar.nlp.nlp.DocumentAnalyzer;
 
 import opennlp.tools.postag.POSModel;
@@ -23,7 +24,6 @@ import opennlp.tools.tokenize.TokenizerModel;
 public class SentenceStripper {
 
     private static boolean html;
-    private static String tagName = "person";
     static final Logger log = LogManager.getLogger(SentenceStripper.class);
 
     // can we extract title by matching on common words?
@@ -39,7 +39,7 @@ public class SentenceStripper {
         if (filename == null) {
             // Hohokam
             filename = "/Users/abrin/Dropbox (ASU)/PDFA-Analysis/lc4-abbyy12-pdfa.pdf";
-            filename = "/Users/abrin/Downloads/ABDAHA/Kelly-et-al-2010_OCR_PDFA.pdf";
+//            filename = "/Users/abrin/Downloads/ABDAHA/Kelly-et-al-2010_OCR_PDFA.pdf";
             // filename = "/Users/abrin/Downloads/ABDAHA/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
             // filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
             // filename = "tmp/Underfleet1.html.txt";
@@ -71,11 +71,23 @@ public class SentenceStripper {
 
                 // VocabList list = new VocabList(new FileInputStream("ontologies/Cultures_flattened.txt"));
                 // VocabList list = new VocabList(new FileInputStream("ontologies/CeramicType_Wares.txt"));
-                VocabList list = new VocabList(new FileInputStream("ontologies/People.txt"));
+                SourceType type = SourceType.MATERIAL;
+                VocabList list = new VocabList(new FileInputStream("ontologies/" + type.getFilename()));
                 Set<String> uniqueTags = new HashSet<>();
                 log.debug("\n#######\n#######  FILE: {}", file.getName());
                 log.debug("\n#######  terms: {}\n#######\n####", list.getList());
-                SentenceProcessor sp = new SentenceProcessor(tokenizerModel, tagger, tagName, list.getList());
+                
+                
+                SentenceProcessor sp = new SentenceProcessor(tokenizerModel, tagger, type.name().toLowerCase(), list.getList());
+
+                
+                if ("type" == "person") {
+                    sp.setCaseSensitive(true);
+                    sp.setIgnoreLeadingPreposition(false);
+                }
+                
+                sp.setCaseSensitive(false);
+                sp.setIgnoreLeadingPreposition(true);
                 for (String _sentence : sentenceDetector.sentDetect(input)) {
                     for (String sentence____ : _sentence.split(DocumentAnalyzer.SPLIT_SENTENCE)) {
 //                    if (sentence____.toLowerCase().contains("abbott")) {
