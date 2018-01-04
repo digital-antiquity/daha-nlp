@@ -40,7 +40,7 @@ public class SentenceStripper {
             // Hohokam
             filename = "/Users/abrin/Dropbox (ASU)/PDFA-Analysis/lc4-abbyy12-pdfa.pdf";
 //            filename = "/Users/abrin/Downloads/ABDAHA/Kelly-et-al-2010_OCR_PDFA.pdf";
-            // filename = "/Users/abrin/Downloads/ABDAHA/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
+             filename = "/Users/abrin/Downloads/ABDAHA/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
             // filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
             // filename = "tmp/Underfleet1.html.txt";
         }
@@ -71,7 +71,7 @@ public class SentenceStripper {
 
                 // VocabList list = new VocabList(new FileInputStream("ontologies/Cultures_flattened.txt"));
                 // VocabList list = new VocabList(new FileInputStream("ontologies/CeramicType_Wares.txt"));
-                SourceType type = SourceType.MATERIAL;
+                SourceType type = SourceType.OBJECTS;
                 VocabList list = new VocabList(new FileInputStream("ontologies/" + type.getFilename()));
                 Set<String> uniqueTags = new HashSet<>();
                 log.debug("\n#######\n#######  FILE: {}", file.getName());
@@ -81,13 +81,12 @@ public class SentenceStripper {
                 SentenceProcessor sp = new SentenceProcessor(tokenizerModel, tagger, type.name().toLowerCase(), list.getList());
 
                 
-                if ("type" == "person") {
+                if (type.isCaseSensitive()) {
                     sp.setCaseSensitive(true);
-                    sp.setIgnoreLeadingPreposition(false);
                 }
-                
-                sp.setCaseSensitive(false);
-                sp.setIgnoreLeadingPreposition(true);
+                if (type.allowInitialPreposition()) {
+                    sp.setIgnoreLeadingPreposition(true);
+                }
                 for (String _sentence : sentenceDetector.sentDetect(input)) {
                     for (String sentence____ : _sentence.split(DocumentAnalyzer.SPLIT_SENTENCE)) {
 //                    if (sentence____.toLowerCase().contains("abbott")) {

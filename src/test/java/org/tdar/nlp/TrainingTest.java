@@ -45,6 +45,28 @@ public class TrainingTest {
         assertNotNull(processSentence.getSentence());
         assertTrue(processSentence.getTags().contains("granite"));
     }
+    
+    @Test
+    public void testOfNounOnly() throws FileNotFoundException, IOException {
+        SentenceProcessor sp = setup("ontologies/Features_flattened.txt");
+        sp.setCaseSensitive(false);
+        sp.setIgnoreLeadingPreposition(true);
+        SentenceResult processSentence = sp.processSentence("These data were not analyzed further , due to the highly manipulated nature of the data set ; however , the preliminary results suggest that there are com positional groups that can and should be explored petrographically as well as through chemical means .");
+        log.debug(processSentence.getSentence());
+        assertNull(processSentence.getSentence());
+        assertFalse(processSentence.getTags().contains("well"));
+    }
+
+    @Test
+    public void testOfAmpersandGranite() throws FileNotFoundException, IOException {
+        SentenceProcessor sp = setup("ontologies/Materials_flattened.txt");
+        sp.setCaseSensitive(false);
+        sp.setIgnoreLeadingPreposition(true);
+        SentenceResult processSentence = sp.processSentence(" If sands collected from these locales closely match the a I and the Bed & Granite temper groups , we can be reasonably sure that these materials are associated with the local production of plainwares on Perry Mesa .");
+        log.debug(processSentence.getSentence());
+        assertNull(processSentence.getSentence());
+        assertFalse(processSentence.getTags().contains("Granite"));
+    }
 
     
     @Test

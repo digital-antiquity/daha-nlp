@@ -39,7 +39,7 @@ public class OpenNLPTrain {
 
     public static void main(String[] args) throws IOException {
         for (SourceType type: SourceType.values()) {
-            train(type.getTrainingFilename() + ".bin", type.name().toLowerCase(), type.name().toLowerCase() + ".train");
+            train("en-ner-" + type.getTrainingFilename() + ".bin", type.name().toLowerCase(), type.name().toLowerCase() + ".train");
         }
 //        train("en-ner-site.bin", "site", "site.train");
 //        train("en-ner-culture.bin", "culture", "culture.train");

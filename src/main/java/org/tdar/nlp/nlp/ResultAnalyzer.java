@@ -18,6 +18,9 @@ import org.tdar.nlp.result.Section;
 
 public class ResultAnalyzer {
 
+    private static final int _20 = 20;
+    private static final int _1000 = 1000;
+    private static final int _200 = 200;
     private static final int OVERRIDE_RELEVANCY_WITH_OCURRENCE_HIGHER_THAN = 20;
     public static final int SKIP_PHRASES_LONGER_THAN = 5;
     private final Logger log = LogManager.getLogger(getClass());
@@ -99,7 +102,7 @@ public class ResultAnalyzer {
                 if (StringUtils.isNotBlank(type)) {
                     header += " ";
                 }
-                if ((key > avg || list.size() < 20) && key > 0) {
+                if ((key > avg || list.size() < _20) && key > 0) {
                         log.debug(header + key + " | " + val);
                         results.put(val, key);
                 }
@@ -124,20 +127,20 @@ public class ResultAnalyzer {
             Integer weightedOccurrence = value.getWeightedOccurrence();
             for (String boost : boostValues) {
                 if (StringUtils.containsIgnoreCase(key, boost)) {
-                    weightedOccurrence += 200;
+                    weightedOccurrence += _200;
                 }
                 if (StringUtils.equalsIgnoreCase(key, boost)) {
-                    weightedOccurrence -=1000;
+                    weightedOccurrence -=_1000;
                 }
             }
             
             // for people and institutions, weight multi-word terms as higher
             if ((StringUtils.equalsIgnoreCase(type, "person") || StringUtils.equalsIgnoreCase(type, "institution"))&& StringUtils.countMatches(key, " ") < 1) {
-                weightedOccurrence -= 200;
+                weightedOccurrence -= _200;
             }
             
             if (regexBoost != null && key.matches(regexBoost)) {
-                weightedOccurrence += 200;
+                weightedOccurrence += _200;
             }
             List<String> results = reverse.getOrDefault(weightedOccurrence, new ArrayList<String>());
             total += weightedOccurrence;

@@ -92,6 +92,11 @@ public class SentenceProcessor {
                 // continue;
                 // }
                 // //
+                
+                if (!tags[i].contains("NN") && !tags[i].contains("NP")) {
+                    continue;
+                }
+                
                 if (term.equalsIgnoreCase(word) && !caseSensitive || term.equals(word) && caseSensitive) {
                     log.trace("{}|{}", term, word);
                     int j = i + 1;

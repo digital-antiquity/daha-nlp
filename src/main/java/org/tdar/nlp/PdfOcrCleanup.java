@@ -97,6 +97,7 @@ public class PdfOcrCleanup {
         pairs.add(new String[] { " H a", " Ha" });
         pairs.add(new String[] { " H ei", " Hei" });
         pairs.add(new String[] { " H en", " Hen" });
+        pairs.add(new String[] { " M ar", " Mar" });
         pairs.add(new String[] { " M e", " Me" });
         pairs.add(new String[] { " M i", " Mi" });
         pairs.add(new String[] { " M u", " Mu" });

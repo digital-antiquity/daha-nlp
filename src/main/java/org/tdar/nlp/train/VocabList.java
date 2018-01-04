@@ -28,8 +28,11 @@ public class VocabList {
         
         List<String> toAdd = new ArrayList<>();
         // handle "period" which can be both cases
-        
+        List<String> toRemove = new ArrayList<>();
         for (String entry : list) {
+            if (entry.trim().startsWith("#")) {
+                toRemove.add(entry);
+            }
             String t_ = Utils.replaceSmartQuotes(entry);
             if (!entry.equals(t_)) {
                 toAdd.add(t_);
@@ -40,6 +43,7 @@ public class VocabList {
             toAdd.add(t_.replaceAll("\\s\\w\\.\\s", " "));
         }
         list.addAll(toAdd);
+        list.removeAll(toRemove);
 
         toAdd.clear();
         for (String entry : list) {

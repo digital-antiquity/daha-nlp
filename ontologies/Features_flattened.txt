@@ -1,0 +1,270 @@
+Activity Area
+Animal Burial
+Non-Human Burial
+Animal Remains
+Faunal remains
+Atalaya 
+Ball Court
+Ballcourt
+Barn 
+Battle Site 
+Beam
+Bedrock Feature
+Bedrock Grinding Feature
+Bedrock Mortar
+Bedrock Steps
+Cupule Rock
+Grinding Slick
+Pecked Bedrock Depression
+Bin
+Cyst
+Blind
+Bone Bed
+Brush Layer
+Burial
+Grave
+Cremation
+Inhumation
+Burned Rock Midden 
+Cache
+Cairn 
+Cavate Room 
+Cave
+Cemetery
+Clearing in Desert Pavement
+Crematory
+Culturally Modified Tree
+Dance Plaza
+Ceremony Ground
+Daub
+Depression
+Door
+Dugout
+# Field
+Agricultural Field
+Agricultural Depression
+Akchin Field
+Garden
+Grid Garden
+Gravel-mulched Field
+Soil Control Structure
+Field House
+Fieldhouse
+Fire-Cracked Rock Concentration
+Floor
+Dirt Floor
+Plastered Floor
+Masonry Floor
+Game Pit
+Trap
+Hearth 
+Cooking Feature
+Heating Feature
+Prepared Hearth
+Unprepared Hearth
+Historic Feature
+Historic Structure
+Car Body
+Church
+Religious Structure
+Coke Oven 
+Dump
+Fence
+Fired Brick Structure
+Graffiti
+Grain Mill
+Historic Settlement
+Historic Structure
+Livestock Feature
+Corral
+Livestock Enclosure 
+Lambing Pen
+Logging Feature
+Military Feature
+Military Emplacement
+Gun Emplacement
+Military Target
+Military Testing And Experimentation Feature
+Milled Lumber Structure
+Mining Feature
+Mine
+Mine Shaft
+Mine Tunnel
+Mine Waste
+Tailings
+Ore Processing Facility
+Ore Transport Feature
+One Room Structure
+Orchard
+Outbuilding
+Outhouse
+Pipeline
+Recreational Feature
+Roadside Feature
+Historic
+Sawmill
+Scarecrow
+Stage Stop
+Stockade 
+Survey Monument
+Tank
+Trading Post/Mercantile 
+Trailer
+Transportation Feature
+Air Transportaion Feature
+Bridge 
+Railroad Track
+Railroad Bed
+Utility/Communication Feature
+Windmill
+House
+House Foundation 
+Extant House
+Human Remains 
+Hunting Feature 
+Indigenous Historic Structure
+Hogan
+Forked Stick Hogan
+Ki
+Ramada
+Brush Shelter
+Sweat Lodge
+Wickiup
+In-Place Metate
+In-Place Anvil
+In-Place Vessel
+Intaglio 
+Isolated Room
+Kiln
+Brick Kiln
+Pottery Kiln
+Lime Kiln
+Kiva 
+Great Kiva
+Linear Feature
+Linear Border
+Linear Communication System
+Masonry Structure
+Material Stockpile
+Mealing Bin
+Midden
+Monument
+Mound
+Mound Cell
+Platform Mound
+Structural Mound
+Trash Mound
+Niche
+Socket
+Oven
+Palisade
+Pedestal
+Pillar
+Pit
+Adobe Mixing Pit
+Ash Pit
+Borrow Pit
+Burial Pit
+Cremation Pit
+Inhumation Pit
+Cache Pit
+Caliche Mixing Basin
+Clay-Mixing Pit
+Clay-Lined Pit
+Horno
+Roasting Pit
+Mescal Pit
+Slab-Lined Pit
+Trash Pit
+Plaza
+Posthole
+Post
+Post Mold
+Public Building
+Pyramid
+Quarry
+Clay Quarry 
+Lithic Quarry 
+Resource Procurement Area
+Ring Midden
+Road Associated Feature
+Prehistoric
+# Road
+Rock Art
+Petroglyph
+Painted Petroglyph
+Pictograph
+Rockshelter
+Rock Shelter
+Roof Fall
+Scatter
+Artifact Scatter 
+Scatter, Lithic
+Lithic Scatter
+Scatter, Sherd
+Sherd Scatter
+Potsherd Scatter
+Scatter, Trash
+Trash Scatter
+Artifact Scatter
+Shed
+Shrine
+Soil Stain
+Ash Stain
+Charcoal Stain
+Stairway
+Stone Features
+Cobble Alignment
+Rock Alignment
+Stone Alignment
+Rock Pile
+Rock Ring
+Rock Circle
+Stone Circle 
+Tipi Ring
+Structure
+Adobe Room
+Cliff Dwelling
+Cobble-Masonry Room
+Compound
+Jacal Structure
+Pithouse
+Pit House
+Great Pithouse
+Ramada
+Roomblock
+Room Block
+Slab-Masonry Room
+Structure Extant
+Structure Foundation
+Tent Base
+Terrace
+Tower
+# Town
+Trail
+Trincheras
+Village
+Wall
+Cobble-Masonry Wall
+Compound Wall
+Rock-Reinforced Adobe Compound Wall
+Wall Fall
+Post-Reinforced Wall
+Water Control Feature
+Check Dam
+Checkdam
+Diversion Structure
+Irrigation Feature
+Canal
+Irrigation Ditch
+Main Canal
+Lateral Canal
+Headgate
+Turnout
+Reservoir
+Spring Control Device
+Spring Control Structure
+Water Catchment Device
+Well
+Window
+Wood Concentration

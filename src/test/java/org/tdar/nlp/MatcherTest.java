@@ -60,7 +60,7 @@ public class MatcherTest {
         SentenceModel sModel = new SentenceModel(new FileInputStream(new File(dir, "en-sent.bin")));
 
         // load the test text
-        String sentence = IOUtils.toString(new FileInputStream("src/test/resources/kelly.txt"));
+        String sentence = IOUtils.toString(new FileInputStream("src/test/resources/person.txt"));
         SentenceDetectorME sentenceDetector = new SentenceDetectorME(sModel);
         // sentence = StringUtils.replace(sentence, "\n\n", ". ");
 

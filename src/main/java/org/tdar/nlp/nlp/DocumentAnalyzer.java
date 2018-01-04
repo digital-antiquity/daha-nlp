@@ -70,6 +70,7 @@ public class DocumentAnalyzer {
         TokenNameFinderModel modelSitename = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-site.bin")));
         TokenNameFinderModel modelCulture = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-culture.bin")));
         TokenNameFinderModel modelCeramic = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-ceramic.bin")));
+        TokenNameFinderModel modelObject = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-objects.bin")));
         TokenNameFinderModel modelDate = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-date.bin")));
         TokenNameFinderModel modelPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-person.bin")));
         TokenNameFinderModel modelCustomPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-custom-person.bin")));
@@ -77,7 +78,7 @@ public class DocumentAnalyzer {
         TokenNameFinderModel modelCustomLocation = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-custom-location.bin")));
         TokenNameFinderModel modelOrganization = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-organization.bin")));
         TokenNameFinderModel modelLocation = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-location.bin")));
-        TokenNameFinderModel modelMaterial = new TokenNameFinderModel(new FileInputStream(new File(dir, "material.bin")));
+        TokenNameFinderModel modelMaterial = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-material.bin")));
 
         FeatureGenerator[] featureGenerators = { new NGramFeatureGenerator(1, 1),
                 new NGramFeatureGenerator(2, 3) };
@@ -99,6 +100,7 @@ public class DocumentAnalyzer {
         NLPHelper site = new NLPHelper("site", modelSitename);
         NLPHelper culture = new NLPHelper("culture", modelCulture);
         NLPHelper ceramic = new NLPHelper("ceramic", modelCeramic);
+        NLPHelper object = new NLPHelper("object", modelObject);
         NLPHelper material = new NLPHelper("material", modelMaterial);
         site.setBoostValues(Arrays.asList("site","ruin","excavation"));
         NLPHelper cite = new NLPHelper("citation", modelCitation);
@@ -141,6 +143,7 @@ public class DocumentAnalyzer {
         }
         doc.getHelpers().add(date);
         doc.getHelpers().add(ceramic);
+        doc.getHelpers().add(object);
         NlpPage page = new NlpPage(pageNum);
         List<String> cultures = new ArrayList<>();
         Pattern testPattern = Pattern.compile("("+StringUtils.join(cultures,"|")+")");
