@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tdar.nlp.SourceType;
 import org.tdar.nlp.Utils;
 
 import opennlp.tools.namefind.TokenNameFinderModel;
@@ -45,9 +46,9 @@ public class NLPHelper {
 
     private List<String> ignoreTerms = new ArrayList<>();;
 
-    public NLPHelper(String type, TokenNameFinderModel... models) {
-        this.type = type;
-        this.models = Arrays.asList(models);
+    public NLPHelper(SourceType type, TokenNameFinderModel ... modelMaterial) {
+        this.type = type.name().toLowerCase();
+        this.models = Arrays.asList(modelMaterial);
     }
 
     public boolean stringValid(String key) {

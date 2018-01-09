@@ -148,7 +148,7 @@ Masonry Structure
 Material Stockpile
 Mealing Bin
 Midden
-Monument
+# Monument
 Mound
 Mound Cell
 Platform Mound
@@ -226,7 +226,7 @@ Structure
 Adobe Room
 Cliff Dwelling
 Cobble-Masonry Room
-Compound
+# Compound
 Jacal Structure
 Pithouse
 Pit House
@@ -243,7 +243,7 @@ Tower
 # Town
 Trail
 Trincheras
-Village
+# Village
 Wall
 Cobble-Masonry Wall
 Compound Wall
@@ -261,7 +261,7 @@ Main Canal
 Lateral Canal
 Headgate
 Turnout
-Reservoir
+# Reservoir
 Spring Control Device
 Spring Control Structure
 Water Catchment Device

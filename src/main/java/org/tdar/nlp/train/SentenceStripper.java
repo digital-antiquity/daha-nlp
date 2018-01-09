@@ -40,7 +40,7 @@ public class SentenceStripper {
             // Hohokam
             filename = "/Users/abrin/Dropbox (ASU)/PDFA-Analysis/lc4-abbyy12-pdfa.pdf";
 //            filename = "/Users/abrin/Downloads/ABDAHA/Kelly-et-al-2010_OCR_PDFA.pdf";
-             filename = "/Users/abrin/Downloads/ABDAHA/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
+//             filename = "/Users/abrin/Downloads/ABDAHA/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
             // filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
             // filename = "tmp/Underfleet1.html.txt";
         }
@@ -71,7 +71,7 @@ public class SentenceStripper {
 
                 // VocabList list = new VocabList(new FileInputStream("ontologies/Cultures_flattened.txt"));
                 // VocabList list = new VocabList(new FileInputStream("ontologies/CeramicType_Wares.txt"));
-                SourceType type = SourceType.OBJECTS;
+                SourceType type = SourceType.FEATURES;
                 VocabList list = new VocabList(new FileInputStream("ontologies/" + type.getFilename()));
                 Set<String> uniqueTags = new HashSet<>();
                 log.debug("\n#######\n#######  FILE: {}", file.getName());

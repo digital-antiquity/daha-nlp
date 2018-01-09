@@ -12,7 +12,8 @@ public enum SourceType {
     MATERIAL("Materials_flattened.txt","material"),
     CERAMIC("CeramicType_Wares.txt","ceramic"),
     CITATION(null, "citation"),
-    SITECODE(null, null);
+    SITECODE(null, null),
+    DATE(null,null);
 
     SourceType(String filename, String trainingFilename) {
         this.filename = filename;
@@ -25,6 +26,10 @@ public enum SourceType {
 
     public String getFilename() {
         return filename;
+    }
+    
+    public String getOutputFilename() {
+        return String.format("en-ner-%s.bin", trainingFilename);
     }
 
     public String getTrainingFilename() {

@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.tdar.nlp.SourceType;
 import org.tdar.nlp.Utils;
 import org.tdar.nlp.document.NlpDocument;
 import org.tdar.nlp.document.NlpPage;
@@ -66,19 +67,20 @@ public class DocumentAnalyzer {
         SentenceDetectorME sentenceDetector = new SentenceDetectorME(sModel);
 
         TokenizerModel tokenizerModel = new TokenizerModel(new FileInputStream(new File(dir, "en-token.bin")));
-        TokenNameFinderModel modelCitation = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-citation.bin")));
-        TokenNameFinderModel modelSitename = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-site.bin")));
-        TokenNameFinderModel modelCulture = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-culture.bin")));
-        TokenNameFinderModel modelCeramic = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-ceramic.bin")));
-        TokenNameFinderModel modelObject = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-objects.bin")));
+        TokenNameFinderModel modelCitation = new TokenNameFinderModel(new FileInputStream(new File(dir, SourceType.CITATION.getOutputFilename())));
+        TokenNameFinderModel modelSitename = new TokenNameFinderModel(new FileInputStream(new File(dir, SourceType.SITE.getOutputFilename())));
+        TokenNameFinderModel modelCulture = new TokenNameFinderModel(new FileInputStream(new File(dir, SourceType.CULTURE.getOutputFilename())));
+        TokenNameFinderModel modelCeramic = new TokenNameFinderModel(new FileInputStream(new File(dir, SourceType.CERAMIC.getOutputFilename())));
+        TokenNameFinderModel modelObject = new TokenNameFinderModel(new FileInputStream(new File(dir, SourceType.OBJECTS.getOutputFilename())));
         TokenNameFinderModel modelDate = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-date.bin")));
+        TokenNameFinderModel modelFeature = new TokenNameFinderModel(new FileInputStream(new File(dir, SourceType.FEATURES.getOutputFilename())));
         TokenNameFinderModel modelPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-person.bin")));
-        TokenNameFinderModel modelCustomPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-custom-person.bin")));
-        TokenNameFinderModel modelCustomOrganization = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-custom-organization.bin")));
-        TokenNameFinderModel modelCustomLocation = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-custom-location.bin")));
+        TokenNameFinderModel modelCustomPerson = new TokenNameFinderModel(new FileInputStream(new File(dir, SourceType.PERSON.getOutputFilename())));
+        TokenNameFinderModel modelCustomOrganization = new TokenNameFinderModel(new FileInputStream(new File(dir, SourceType.INSTITUTION.getOutputFilename())));
+        TokenNameFinderModel modelCustomLocation = new TokenNameFinderModel(new FileInputStream(new File(dir, SourceType.LOCATION.getOutputFilename())));
         TokenNameFinderModel modelOrganization = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-organization.bin")));
         TokenNameFinderModel modelLocation = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-location.bin")));
-        TokenNameFinderModel modelMaterial = new TokenNameFinderModel(new FileInputStream(new File(dir, "en-ner-material.bin")));
+        TokenNameFinderModel modelMaterial = new TokenNameFinderModel(new FileInputStream(new File(dir, SourceType.MATERIAL.getOutputFilename())));
 
         FeatureGenerator[] featureGenerators = { new NGramFeatureGenerator(1, 1),
                 new NGramFeatureGenerator(2, 3) };
@@ -94,19 +96,20 @@ public class DocumentAnalyzer {
         log.debug("------------------------------------------------------------------------------------------------------------");
         log.debug("    " + filename);
         log.debug("------------------------------------------------------------------------------------------------------------");
-        NLPHelper person = new NLPHelper("person", modelPerson, modelCustomPerson);
-        NLPHelper date = new NLPHelper("date", modelDate);
+        NLPHelper person = new NLPHelper(SourceType.PERSON, modelPerson, modelCustomPerson);
+        NLPHelper date = new NLPHelper(SourceType.DATE, modelDate);
         
-        NLPHelper site = new NLPHelper("site", modelSitename);
-        NLPHelper culture = new NLPHelper("culture", modelCulture);
-        NLPHelper ceramic = new NLPHelper("ceramic", modelCeramic);
-        NLPHelper object = new NLPHelper("object", modelObject);
-        NLPHelper material = new NLPHelper("material", modelMaterial);
+        NLPHelper site = new NLPHelper(SourceType.SITE, modelSitename);
+        NLPHelper feature = new NLPHelper(SourceType.FEATURES, modelFeature);
+        NLPHelper culture = new NLPHelper(SourceType.CULTURE, modelCulture);
+        NLPHelper ceramic = new NLPHelper(SourceType.CERAMIC, modelCeramic);
+        NLPHelper object = new NLPHelper(SourceType.OBJECTS, modelObject);
+        NLPHelper material = new NLPHelper(SourceType.MATERIAL, modelMaterial);
         site.setBoostValues(Arrays.asList("site","ruin","excavation"));
-        NLPHelper cite = new NLPHelper("citation", modelCitation);
+        NLPHelper cite = new NLPHelper(SourceType.CITATION, modelCitation);
         cite.setRegexBoost(".+\\d++.*");
         
-        NLPHelper institution = new NLPHelper("institution", modelCustomOrganization, modelOrganization);
+        NLPHelper institution = new NLPHelper(SourceType.INSTITUTION, modelCustomOrganization, modelOrganization);
         institution.setBoostValues(
                 Arrays.asList("inc.", "co.", "university", "college", "museum", "company", "llc", "ltd", " of ", "office", "services", "society"));
         person.setMinTermLength(4);
@@ -116,7 +119,7 @@ public class DocumentAnalyzer {
         person.setMinPercentNumberWords(2);
         person.setTermIgnore(Arrays.asList("mesa"));
         person.setSkipPreviousTerms(Arrays.asList("of", "in", "the"));
-        NLPHelper location = new NLPHelper("location", modelCustomLocation, modelLocation);
+        NLPHelper location = new NLPHelper(SourceType.LOCATION, modelCustomLocation, modelLocation);
         location.setBoostValues(Arrays.asList("valley", "mountain", "state", "country", "county", "city", "town", "base",
                 "hill", "ranch"));
         int pos = 0;
@@ -142,6 +145,7 @@ public class DocumentAnalyzer {
             doc.getHelpers().add(site);
         }
         doc.getHelpers().add(date);
+        doc.getHelpers().add(feature);
         doc.getHelpers().add(ceramic);
         doc.getHelpers().add(object);
         NlpPage page = new NlpPage(pageNum);
