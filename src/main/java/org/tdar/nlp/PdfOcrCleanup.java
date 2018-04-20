@@ -135,6 +135,11 @@ public class PdfOcrCleanup {
         pairs.add(new String[] { "fw are", "fware" });
 
         String txt_ = sw.toString();
+
+        // cleanup double-spaced characters
+        // (.{40,80})\n\n(.{40,80}) --> $1\n$2 would make a lot of sense too
+
+        
         StringBuilder sb2 = new StringBuilder();
         for (String txt__ : txt_.split("[\r\n]")) {
             String orig = new String(txt__);

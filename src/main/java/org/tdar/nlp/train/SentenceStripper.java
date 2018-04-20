@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +42,7 @@ public class SentenceStripper {
             filename = "/Users/abrin/Dropbox (ASU)/PDFA-Analysis/lc4-abbyy12-pdfa.pdf";
 //            filename = "/Users/abrin/Downloads/ABDAHA/Kelly-et-al-2010_OCR_PDFA.pdf";
 //             filename = "/Users/abrin/Downloads/ABDAHA/2001_Abbott_GreweArchaeologicalVol2PartI_OCR_PDFA.pdf";
+            filename = "/Users/abrin/Dropbox (ASU)/100261.pdf";
             // filename = "tmp/hedgpeth-hills_locality-1_OCR_PDFA.txt";
             // filename = "tmp/Underfleet1.html.txt";
         }
@@ -71,11 +73,11 @@ public class SentenceStripper {
 
                 // VocabList list = new VocabList(new FileInputStream("ontologies/Cultures_flattened.txt"));
                 // VocabList list = new VocabList(new FileInputStream("ontologies/CeramicType_Wares.txt"));
-                SourceType type = SourceType.FEATURES;
+                SourceType type = SourceType.PERSON;
                 VocabList list = new VocabList(new FileInputStream("ontologies/" + type.getFilename()));
                 Set<String> uniqueTags = new HashSet<>();
-                log.debug("\n#######\n#######  FILE: {}", file.getName());
-                log.debug("\n#######  terms: {}\n#######\n####", list.getList());
+                System.out.println(String.format("\n###############\n####  FILE: %s", file.getName()));
+                System.out.println(String.format("####  terms: %s\n###############\n", list.getList()));
                 
                 
                 SentenceProcessor sp = new SentenceProcessor(tokenizerModel, tagger, type.name().toLowerCase(), list.getList());
@@ -96,10 +98,10 @@ public class SentenceStripper {
                         SentenceResult result = sp.processSentence(sentence____);
                         uniqueTags.addAll(result.getTags());
                         if (!result.getTags().isEmpty()) {
-                            log.debug(" {} __ {}", result.getTags(), result.getTaggedSentence());
+                            System.out.println(String.format("## %s __ %s", result.getTags(), result.getTaggedSentence()));
                         }
                         if (result.getSentence() != null) {
-                            log.debug("## {}", result.getSentence());
+                            System.out.println(String.format("%s", result.getSentence()));
                         }
                     }
                 }
